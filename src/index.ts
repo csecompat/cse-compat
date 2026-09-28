@@ -46,11 +46,37 @@ export interface Env {
   FAILOVER_ON_QUOTA?: string;
   TIMEOUT_MS?: string;
   /** Optional KV namespace for landing-page waitlist signups. */
-  WAITLIST?: { put(key: string, value: string): Promise<void> };
+  WAITLIST?: {
+    get(key: string): Promise<string | null>;
+    put(key: string, value: string, opts?: { expirationTtl?: number }): Promise<void>;
+  };
   /** Optional Workers rate-limit binding applied to the public demo key, per visitor IP. */
   DEMO_LIMITER?: { limit(opts: { key: string }): Promise<{ success: boolean }> };
   /** The public demo key (default "demo"). Requests with it get demo limits. */
   DEMO_KEY?: string;
+  /** Max demo-key requests per UTC day across all visitors (default 150). Uses the WAITLIST KV. */
+  DEMO_DAILY_CAP?: string;
+}
+
+export const DEMO_DAILY_MESSAGE =
+  "The public demo has reached today's limit and resets at midnight UTC. " +
+  'Self-host with your own (free-tier) key to keep testing: https://github.com/csecompat/cse-compat';
+
+/**
+ * Global daily budget for the demo key. KV is eventually consistent, so under
+ * bursts the count can drift slightly past the cap; that is acceptable for a
+ * demo budget and costs no extra infrastructure.
+ */
+async function demoDailyBudgetOk(env: Env, ctx?: { waitUntil(p: Promise<unknown>): void }): Promise<boolean> {
+  if (!env.WAITLIST) return true;
+  const cap = parseInt(env.DEMO_DAILY_CAP ?? '150', 10);
+  const key = `demo-count:${new Date().toISOString().slice(0, 10)}`;
+  const used = parseInt((await env.WAITLIST.get(key)) ?? '0', 10);
+  if (used >= cap) return false;
+  const write = env.WAITLIST.put(key, String(used + 1), { expirationTtl: 60 * 60 * 48 });
+  if (ctx) ctx.waitUntil(write);
+  else await write;
+  return true;
 }
 
 export const DEMO_RATE_MESSAGE =
@@ -96,6 +122,11 @@ async function handleWaitlist(request: Request, env: Env): Promise<Response> {
   if (!env.WAITLIST) {
     return json(503, { ok: false, error: 'waitlist storage not configured' });
   }
+  if (env.DEMO_LIMITER) {
+    const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
+    const { success } = await env.DEMO_LIMITER.limit({ key: `waitlist:${ip}` });
+    if (!success) return json(429, { ok: false, error: 'too many signups, try again in a minute' });
+  }
   let email = '';
   try {
     const body = (await request.json()) as { email?: unknown };
@@ -112,7 +143,7 @@ async function handleWaitlist(request: Request, env: Env): Promise<Response> {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, '');
 
@@ -145,6 +176,9 @@ export default {
       const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
       const { success } = await env.DEMO_LIMITER.limit({ key: `demo:${ip}` });
       if (!success) return rateLimited(DEMO_RATE_MESSAGE);
+    }
+    if (isDemo && !(await demoDailyBudgetOk(env, ctx))) {
+      return rateLimited(DEMO_DAILY_MESSAGE);
     }
 
     const providers = buildProviders(env);

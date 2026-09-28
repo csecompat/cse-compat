@@ -14,6 +14,7 @@ function kvStub() {
   return {
     store,
     kv: {
+      get: async (k: string) => store.get(k) ?? null,
       put: async (k: string, v: string) => {
         store.set(k, v);
       },
@@ -50,5 +51,14 @@ describe('/api/waitlist', () => {
     // GET /api/waitlist is not a route; falls through to the 404 envelope.
     const resp = await worker.fetch(new Request('https://proxy.example/api/waitlist'), {});
     expect(resp.status).toBe(404);
+  });
+});
+
+describe('/api/waitlist abuse protection', () => {
+  it('rate-limits signups per visitor when the limiter is bound', async () => {
+    const { kv } = kvStub();
+    const env: Env = { WAITLIST: kv, DEMO_LIMITER: { limit: async () => ({ success: false }) } };
+    const resp = await worker.fetch(post({ email: 'a@b.co' }), env);
+    expect(resp.status).toBe(429);
   });
 });

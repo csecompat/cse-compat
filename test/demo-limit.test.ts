@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import worker, { type Env, DEMO_RATE_MESSAGE, DEMO_CREDITS_MESSAGE } from '../src/index';
+import worker, { type Env, DEMO_RATE_MESSAGE, DEMO_CREDITS_MESSAGE, DEMO_DAILY_MESSAGE } from '../src/index';
 import { resetBreakers } from '../src/router';
 import serperFixture from './fixtures/serper-search.json';
 
@@ -75,5 +75,51 @@ describe('public demo key', () => {
     okUpstream();
     const env: Env = { SERPER_API_KEY: 'k', PROXY_KEYS: 'demo' };
     expect((await worker.fetch(req('demo'), env)).status).toBe(200);
+  });
+});
+
+function memKV() {
+  const store = new Map<string, string>();
+  return {
+    store,
+    kv: {
+      get: async (k: string) => store.get(k) ?? null,
+      put: async (k: string, v: string) => {
+        store.set(k, v);
+      },
+    },
+  };
+}
+
+describe('demo daily cap (global, across all visitors)', () => {
+  it('allows demo requests up to the cap, then answers with a Google-style 429', async () => {
+    okUpstream();
+    const { kv } = memKV();
+    const env: Env = { SERPER_API_KEY: 'k', PROXY_KEYS: 'private,demo', WAITLIST: kv, DEMO_DAILY_CAP: '3' };
+    // different IPs each time: the per-visitor limiter can't stop this, the daily cap must
+    const codes: number[] = [];
+    for (let i = 0; i < 5; i++) codes.push((await worker.fetch(req('demo', `198.51.100.${i}`), env)).status);
+    expect(codes).toEqual([200, 200, 200, 429, 429]);
+    const last = await worker.fetch(req('demo', '198.51.100.99'), env);
+    const body = (await last.json()) as any;
+    expect(body.error.status).toBe('RESOURCE_EXHAUSTED');
+    expect(body.error.message).toBe(DEMO_DAILY_MESSAGE);
+  });
+
+  it('never applies the daily cap to private keys', async () => {
+    okUpstream();
+    const { kv, store } = memKV();
+    const env: Env = { SERPER_API_KEY: 'k', PROXY_KEYS: 'private,demo', WAITLIST: kv, DEMO_DAILY_CAP: '0' };
+    expect((await worker.fetch(req('private'), env)).status).toBe(200);
+    expect([...store.keys()].some((k) => k.startsWith('demo-count:'))).toBe(false);
+  });
+
+  it('counts per UTC day', async () => {
+    okUpstream();
+    const { kv, store } = memKV();
+    const env: Env = { SERPER_API_KEY: 'k', PROXY_KEYS: 'demo', WAITLIST: kv, DEMO_DAILY_CAP: '10' };
+    await worker.fetch(req('demo'), env);
+    const today = new Date().toISOString().slice(0, 10);
+    expect(store.get(`demo-count:${today}`)).toBe('1');
   });
 });
