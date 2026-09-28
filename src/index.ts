@@ -1,0 +1,156 @@
+/**
+ * cse-compat — a drop-in compatible endpoint for the retiring Google
+ * Custom Search JSON API, backed by the caller's OWN upstream search
+ * API keys (BYOK).
+ *
+ * Routes served:
+ *   GET /customsearch/v1
+ *   GET /customsearch/v1/siterestrict
+ *
+ * Configuration (Worker environment):
+ *   PROXY_KEYS         optional comma-separated list of accepted `key=`
+ *                      values. Unset => the proxy accepts any key
+ *                      (for private self-hosted deployments); set it for
+ *                      anything reachable from the internet.
+ *   BRAVE_API_KEY      your own Brave Search API subscription token.
+ *   SERPER_API_KEY     your own serper.dev API key.
+ *   PROVIDER_ORDER     optional, default "brave,serper" filtered to the
+ *                      providers that have keys configured.
+ *   FAILOVER_ON_QUOTA  "true" to fail over to the next provider when one
+ *                      returns 429 on YOUR key. Default false: your quota
+ *                      problems are surfaced, not silently rerouted.
+ *   TIMEOUT_MS         per-provider timeout budget. Default 4000.
+ */
+import { parseSearchParams } from './params';
+import { formatGoogleResponse } from './googleFormat';
+import {
+  backendError,
+  badApiKey,
+  missingApiKey,
+  notFound,
+  upstreamCredentialError,
+  upstreamQuotaError,
+} from './errors';
+import { routeSearch, DEFAULT_TIMEOUT_MS } from './router';
+import type { RoutedProvider } from './router';
+import { ProviderError } from './types';
+import { braveAdapter } from './adapters/brave';
+import { serperAdapter } from './adapters/serper';
+
+export interface Env {
+  PROXY_KEYS?: string;
+  BRAVE_API_KEY?: string;
+  SERPER_API_KEY?: string;
+  PROVIDER_ORDER?: string;
+  FAILOVER_ON_QUOTA?: string;
+  TIMEOUT_MS?: string;
+  /** Optional KV namespace for landing-page waitlist signups. */
+  WAITLIST?: { put(key: string, value: string): Promise<void> };
+}
+
+const ADAPTERS = { brave: braveAdapter, serper: serperAdapter } as const;
+type ProviderName = keyof typeof ADAPTERS;
+
+export function buildProviders(env: Env): RoutedProvider[] {
+  const keys: Record<ProviderName, string | undefined> = {
+    brave: env.BRAVE_API_KEY,
+    serper: env.SERPER_API_KEY,
+  };
+  const order = (env.PROVIDER_ORDER ?? 'brave,serper')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter((s): s is ProviderName => s in ADAPTERS);
+  return order
+    .filter((name) => Boolean(keys[name]))
+    .map((name) => ({ adapter: ADAPTERS[name], creds: { apiKey: keys[name] as string } }));
+}
+
+function authorized(url: URL, headers: Headers, env: Env): 'ok' | 'missing' | 'bad' {
+  // Google clients send the key as ?key= or the x-goog-api-key header.
+  const presented = url.searchParams.get('key') ?? headers.get('x-goog-api-key');
+  const allowed = (env.PROXY_KEYS ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (allowed.length === 0) return 'ok'; // open self-hosted mode
+  if (!presented) return 'missing';
+  return allowed.includes(presented) ? 'ok' : 'bad';
+}
+
+async function handleWaitlist(request: Request, env: Env): Promise<Response> {
+  const json = (status: number, body: unknown) =>
+    new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  if (!env.WAITLIST) {
+    return json(503, { ok: false, error: 'waitlist storage not configured' });
+  }
+  let email = '';
+  try {
+    const body = (await request.json()) as { email?: unknown };
+    email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  } catch {
+    return json(400, { ok: false, error: 'invalid JSON body' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+    return json(400, { ok: false, error: 'invalid email' });
+  }
+  // Idempotent by key: re-signups just refresh the timestamp.
+  await env.WAITLIST.put(`email:${email}`, JSON.stringify({ signedUpAt: new Date().toISOString() }));
+  return json(200, { ok: true });
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/\/+$/, '');
+
+    // Landing-page waitlist signups (static site itself is served by the
+    // [assets] binding in wrangler.toml; the worker only sees non-asset routes).
+    if (path === '/api/waitlist' && request.method === 'POST') {
+      return handleWaitlist(request, env);
+    }
+
+    const siteRestrict = path === '/customsearch/v1/siterestrict';
+    if (path !== '/customsearch/v1' && !siteRestrict) {
+      return notFound();
+    }
+    if (request.method !== 'GET') {
+      return notFound();
+    }
+
+    const auth = authorized(url, request.headers, env);
+    if (auth === 'missing') return missingApiKey();
+    if (auth === 'bad') return badApiKey();
+
+    const parsed = parseSearchParams(url, siteRestrict);
+    if (!parsed.ok) return parsed.response;
+
+    const providers = buildProviders(env);
+    if (providers.length === 0) {
+      return backendError('No upstream provider configured. Set BRAVE_API_KEY and/or SERPER_API_KEY.');
+    }
+
+    try {
+      const result = await routeSearch(parsed.req, providers, {
+        timeoutMs: env.TIMEOUT_MS ? parseInt(env.TIMEOUT_MS, 10) : DEFAULT_TIMEOUT_MS,
+        failoverOnQuota: env.FAILOVER_ON_QUOTA === 'true',
+      });
+      const body = formatGoogleResponse(result, parsed.req);
+      return new Response(JSON.stringify(body, null, 1), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Cache-Control': 'private, max-age=0',
+          'X-CSE-Compat-Provider': result.provider,
+        },
+      });
+    } catch (e) {
+      if (e instanceof ProviderError && e.isCredentialError) {
+        return upstreamCredentialError(e.provider);
+      }
+      if (e instanceof ProviderError && e.isQuotaError) {
+        return upstreamQuotaError(e.provider);
+      }
+      return backendError();
+    }
+  },
+} satisfies ExportedHandler<Env>;

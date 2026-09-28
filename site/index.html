@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Open-source drop-in compatible endpoint for the retiring Google Custom Search JSON API. Bring your own search key; change one URL; keep your code.">
+<title>cse-compat</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+</head>
+<body>
+<style>
+  :root{
+    --bg:#0D1117; --panel:#151B24; --panel2:#10151D; --line:#232B38;
+    --ink:#E7EDF4; --mut:#93A0B4; --faint:#5C6879;
+    --green:#46C160; --green-dim:#1C3524; --red:#E5534B; --red-dim:#3A1F1F;
+    --amber:#E8B93F;
+    --sans:'IBM Plex Sans',-apple-system,'Segoe UI',sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    color-scheme:dark;
+  }
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);margin:0;
+       padding-block:0 64px;padding-inline:20px;line-height:1.6;font-size:16px;}
+  .col{max-width:720px;margin:0 auto;}
+  a{color:var(--ink);}
+
+  /* deadline bar */
+  .deadline{display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+    font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;
+    color:var(--amber);border-bottom:1px solid var(--line);
+    padding-block:14px;margin-bottom:56px;}
+  .deadline .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);
+    box-shadow:0 0 10px var(--amber);flex:none;}
+  .deadline .days{color:var(--ink);font-weight:700;}
+  .deadline .date{color:var(--faint);}
+
+  h1{font-size:clamp(30px,6vw,44px);line-height:1.12;font-weight:700;
+     letter-spacing:-.02em;margin:0 0 18px;text-wrap:balance;}
+  .lede{color:var(--mut);font-size:17.5px;max-width:60ch;margin:0 0 36px;}
+  .lede strong{color:var(--ink);font-weight:600;}
+
+  /* the diff — hero thesis */
+  .diff{font-family:var(--mono);font-size:13.5px;line-height:1.9;
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+    margin:0 0 14px;overflow-x:auto;}
+  .diff .bar{display:flex;gap:8px;align-items:center;padding:9px 14px;
+    border-bottom:1px solid var(--line);color:var(--faint);font-size:11.5px;
+    letter-spacing:.06em;}
+  .diff .bar b{color:var(--mut);font-weight:500;}
+  .diff pre{margin:0;padding:14px 0;min-width:max-content;}
+  .diff .ln{display:block;padding-inline:14px;white-space:pre;}
+  .diff .del{background:var(--red-dim);color:var(--red);}
+  .diff .add{background:var(--green-dim);color:var(--green);}
+  .diff .ctx{color:var(--faint);}
+  .diffnote{color:var(--faint);font-size:13.5px;font-family:var(--mono);margin:0 0 64px;}
+  .diffnote em{color:var(--mut);font-style:normal;}
+
+  h2{font-size:13px;font-family:var(--mono);font-weight:500;letter-spacing:.14em;
+     text-transform:uppercase;color:var(--faint);margin:0 0 22px;}
+  section{margin-bottom:64px;}
+
+  /* value rows */
+  .rows{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line);}
+  .row{display:grid;grid-template-columns:210px 1fr;gap:18px;
+       padding-block:20px;border-bottom:1px solid var(--line);}
+  .row h3{margin:0;font-size:16px;font-weight:600;line-height:1.4;}
+  .row p{margin:0;color:var(--mut);font-size:15px;}
+  .row code{font-family:var(--mono);font-size:13px;color:var(--ink);
+    background:var(--panel);border:1px solid var(--line);border-radius:4px;
+    padding:1px 5px;white-space:nowrap;}
+  @media (max-width:560px){.row{grid-template-columns:1fr;gap:6px;}}
+
+  /* steps */
+  .steps{display:flex;flex-direction:column;gap:14px;counter-reset:step;}
+  .step{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;}
+  .step::before{counter-increment:step;content:counter(step);
+    font-family:var(--mono);font-size:13px;color:var(--green);
+    border:1px solid var(--line);border-radius:6px;width:30px;height:30px;
+    display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step div{min-width:0;}
+  .step p{margin:0 0 8px;font-size:15px;}
+  .step pre{margin:0;font-family:var(--mono);font-size:13px;color:var(--mut);
+    background:var(--panel2);border:1px solid var(--line);border-radius:6px;
+    padding:10px 14px;overflow-x:auto;}
+
+  /* waitlist */
+  .wait{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+        padding:28px 26px;}
+  .wait h2{color:var(--amber);margin-bottom:10px;}
+  .wait .pitch{margin:0 0 20px;color:var(--mut);font-size:15px;max-width:58ch;}
+  .wait .pitch strong{color:var(--ink);font-weight:600;}
+  form{display:flex;gap:10px;flex-wrap:wrap;}
+  input[type=email]{flex:1 1 240px;min-width:0;background:var(--bg);
+    border:1px solid var(--line);border-radius:7px;color:var(--ink);
+    font:15px var(--mono);padding:12px 14px;}
+  input[type=email]::placeholder{color:var(--faint);}
+  input[type=email]:focus{outline:2px solid var(--green);outline-offset:1px;border-color:transparent;}
+  button{flex:none;background:var(--green);color:#08120B;border:0;border-radius:7px;
+    font:600 15px var(--sans);padding:12px 22px;cursor:pointer;}
+  button:hover{filter:brightness(1.08);}
+  button:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .msg{margin:14px 0 0;font-family:var(--mono);font-size:13.5px;}
+  .msg.ok{color:var(--green);}
+  .msg.warn{color:var(--amber);}
+
+  footer{border-top:1px solid var(--line);padding-top:22px;
+    color:var(--faint);font-size:13px;max-width:66ch;}
+  footer p{margin:0 0 8px;}
+
+  @media (prefers-reduced-motion:no-preference){
+    .deadline .dot{animation:pulse 2.4s ease-in-out infinite;}
+    @keyframes pulse{50%{opacity:.35;box-shadow:0 0 2px var(--amber);}}
+  }
+</style>
+
+<div class="col">
+
+  <div class="deadline" role="status">
+    <span class="dot" aria-hidden="true"></span>
+    <span>customsearch/v1 returns its last byte in
+      <span class="days" id="days">—</span> days</span>
+    <span class="date">// shutdown 2027-01-01, closed to new customers since Jan 2026</span>
+  </div>
+
+  <h1>Keep your Custom Search code. Change one URL.</h1>
+  <p class="lede">Google retires the Custom Search JSON API on January 1, 2027.
+    <strong>cse-compat</strong> is an open-source Cloudflare Worker that serves the
+    same endpoint, parameters, response schema, and error envelope — backed by
+    <strong>your own key</strong> from a modern search provider. Your application
+    code never finds out Google left.</p>
+
+  <div class="diff">
+    <div class="bar"><b>config/search.env</b><span>· the entire migration</span></div>
+    <pre><span class="ln ctx">  SEARCH_CX=017576662512468239146:omuauf_lfve</span><span class="ln del">- SEARCH_BASE=https://www.googleapis.com/customsearch/v1</span><span class="ln add">+ SEARCH_BASE=https://cse.yourdomain.workers.dev/customsearch/v1</span><span class="ln ctx">  # items[].link, items[].snippet, queries.nextPage — unchanged</span></pre>
+  </div>
+  <p class="diffnote">2 lines changed · 0 parsers rewritten · <em>deploys in an afternoon, not a sprint</em></p>
+
+  <section>
+    <h2>What "drop-in" means here</h2>
+    <div class="rows">
+      <div class="row">
+        <h3>The contract, byte for byte</h3>
+        <p><code>items[]</code> with <code>htmlSnippet</code> highlighting,
+        <code>queries.nextPage</code> pagination, honest <code>totalResults</code>,
+        <code>num</code>/<code>start</code> limits enforced with Google's exact 400s,
+        quota as <code>429 RESOURCE_EXHAUSTED</code> — never a 402 your client
+        library has no case for. Pinned by a public conformance test suite.</p>
+      </div>
+      <div class="row">
+        <h3>Bring your own key</h3>
+        <p>You plug in your own Brave Search API or serper.dev key and stay their
+        direct customer. cse-compat resells nothing and marks up nothing — it is a
+        translation layer, Apache-2.0 licensed, and the code is public.</p>
+      </div>
+      <div class="row">
+        <h3>Built to fail over</h3>
+        <p>Per-provider circuit breaker, timeout budgets, automatic failover, and
+        pagination that stays on one index so page 2 never skips or repeats.
+        Stateless by design: queries are never logged or stored.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Self-host in three steps</h2>
+    <div class="steps">
+      <div class="step"><div>
+        <p>Deploy the worker to your Cloudflare account.</p>
+        <pre>git clone github.com/YOURNAME/cse-compat && cd cse-compat
+npm install && npx wrangler deploy</pre>
+      </div></div>
+      <div class="step"><div>
+        <p>Add your own upstream key — one provider is enough to start.</p>
+        <pre>npx wrangler secret put BRAVE_API_KEY   # or SERPER_API_KEY</pre>
+      </div></div>
+      <div class="step"><div>
+        <p>Point your app's base URL at the worker. That's the migration.</p>
+        <pre>SEARCH_BASE=https://cse.yourdomain.workers.dev/customsearch/v1</pre>
+      </div></div>
+    </div>
+  </section>
+
+  <section class="wait">
+    <h2>Managed version — waitlist</h2>
+    <p class="pitch">Don't want to run a worker? The hosted version adds
+      <strong>multi-provider fallback</strong>, <strong>cx site-restriction
+      profiles</strong>, usage analytics, and an SLA — same endpoint, zero
+      infrastructure on your side. Launching before the shutdown.</p>
+    <form id="wl" novalidate>
+      <label for="em" hidden>Email</label>
+      <input id="em" type="email" placeholder="you@company.dev" autocomplete="email" required>
+      <button type="submit">Join the waitlist</button>
+    </form>
+    <p class="msg" id="msg" hidden></p>
+  </section>
+
+  <footer>
+    <p>cse-compat is an independent open-source project, not affiliated with or
+      endorsed by Google LLC. "Google" and "Custom Search" are referenced only to
+      describe compatibility with the retiring Custom Search JSON API.</p>
+    <p>Apache-2.0 · stateless · no query logging</p>
+  </footer>
+
+</div>
+
+<script>
+  // Days until the shutdown, in UTC.
+  (function () {
+    var ms = Date.UTC(2027, 0, 1) - Date.now();
+    var d = Math.max(0, Math.ceil(ms / 86400000));
+    document.getElementById('days').textContent = String(d);
+  })();
+
+  // Waitlist submit: POSTs to the worker's own /api/waitlist route.
+  // On the design preview (no backend behind this page) it degrades honestly.
+  (function () {
+    var form = document.getElementById('wl');
+    var msg = document.getElementById('msg');
+    var input = document.getElementById('em');
+    function show(text, cls) { msg.textContent = text; msg.className = 'msg ' + cls; msg.hidden = false; }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = input.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        show('That does not look like an email address.', 'warn');
+        return;
+      }
+      fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      }).then(function (r) {
+        if (r.ok) { show('You are on the list. We will email you before the shutdown.', 'ok'); form.reset(); }
+        else if (r.status === 503) { show('Signups are not configured on this deployment yet.', 'warn'); }
+        else { show('Something went wrong — try again in a minute.', 'warn'); }
+      }).catch(function () {
+        show('Design preview — signups go live on the deployed site.', 'warn');
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>

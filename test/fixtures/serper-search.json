@@ -1,0 +1,15 @@
+{
+  "searchParameters": { "q": "best pizza new york", "type": "search" },
+  "organic": [
+    { "title": "Joe's Pizza - New York", "link": "https://joespizza.com/", "snippet": "The best classic slice in NYC since 1975.", "position": 1 },
+    { "title": "The 12 Best Pizza Places in NYC", "link": "https://example.com/nyc-pizza", "snippet": "Our ranked list of the best pizza in New York.", "position": 2 },
+    { "title": "Lucali - Brooklyn", "link": "https://lucali.example/", "snippet": "Legendary Brooklyn pizza.", "position": 3 },
+    { "title": "Prince Street Pizza", "link": "https://princestreet.example/", "snippet": "Famous square slices.", "position": 4 },
+    { "title": "Best Pizza (Williamsburg)", "link": "https://bestpizza.example/", "snippet": "Literally named Best Pizza.", "position": 5 },
+    { "title": "Di Fara Pizza", "link": "https://difara.example/", "snippet": "A Midwood institution.", "position": 6 },
+    { "title": "Scarr's Pizza", "link": "https://scarrs.example/", "snippet": "Naturally-leavened dough.", "position": 7 },
+    { "title": "John's of Bleecker Street", "link": "https://johns.example/", "snippet": "Coal-fired whole pies only.", "position": 8 },
+    { "title": "L'industrie Pizzeria", "link": "https://lindustrie.example/", "snippet": "Burrata slice fame.", "position": 9 },
+    { "title": "Totonno's", "link": "https://totonnos.example/", "snippet": "Coney Island classic since 1924.", "position": 10 }
+  ]
+}

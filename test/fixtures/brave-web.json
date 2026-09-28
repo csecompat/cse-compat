@@ -1,0 +1,19 @@
+{
+  "query": { "original": "best pizza new york", "more_results_available": true },
+  "web": {
+    "results": [
+      { "title": "Joe's Pizza - New York", "url": "https://joespizza.com/", "description": "The <strong>best</strong> classic slice in NYC since 1975." },
+      { "title": "The 12 Best Pizza Places in NYC", "url": "https://example.com/nyc-pizza", "description": "Our ranked list of the best pizza in New York." },
+      { "title": "Lucali - Brooklyn", "url": "https://lucali.example/", "description": "Legendary Brooklyn pizza with long lines &amp; thin crust." },
+      { "title": "Prince Street Pizza", "url": "https://princestreet.example/", "description": "Famous square slices in Nolita." },
+      { "title": "Best Pizza (Williamsburg)", "url": "https://bestpizza.example/", "description": "Literally named Best Pizza." },
+      { "title": "Di Fara Pizza", "url": "https://difara.example/", "description": "A Midwood institution." },
+      { "title": "Scarr's Pizza", "url": "https://scarrs.example/", "description": "Naturally-leavened dough on the Lower East Side." },
+      { "title": "John's of Bleecker Street", "url": "https://johns.example/", "description": "Coal-fired whole pies only." },
+      { "title": "L'industrie Pizzeria", "url": "https://lindustrie.example/", "description": "Burrata slice fame." },
+      { "title": "Totonno's", "url": "https://totonnos.example/", "description": "Coney Island classic since 1924." },
+      { "title": "Extra Result 11", "url": "https://r11.example/", "description": "Window filler 11." },
+      { "title": "Extra Result 12", "url": "https://r12.example/", "description": "Window filler 12." }
+    ]
+  }
+}

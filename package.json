@@ -1,0 +1,21 @@
+{
+  "name": "cse-compat",
+  "version": "0.1.0",
+  "description": "Drop-in compatible proxy for the retiring Google Custom Search JSON API (customsearch/v1). Bring your own upstream search key; keep your code unchanged.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "capture": "node scripts/capture-fixtures.mjs",
+    "diff-golden": "node scripts/diff-golden.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250101.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "wrangler": "^3.90.0"
+  }
+}

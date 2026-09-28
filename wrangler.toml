@@ -1,0 +1,26 @@
+# cse-compat — Cloudflare Worker configuration
+name = "cse-compat"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+# Secrets (set with `wrangler secret put <NAME>`):
+#   BRAVE_API_KEY      your own Brave Search API subscription token (BYOK)
+#   SERPER_API_KEY     your own serper.dev key (BYOK)
+#   PROXY_KEYS         comma-separated keys your clients will send as ?key=
+
+[vars]
+# PROVIDER_ORDER = "brave,serper"
+# FAILOVER_ON_QUOTA = "false"
+# TIMEOUT_MS = "4000"
+
+# Landing page: served as static assets at / (the worker still handles
+# /customsearch/* and /api/*). Delete this block if you deploy API-only.
+[assets]
+directory = "./site"
+
+# Waitlist signups land in KV. Create with:
+#   npx wrangler kv namespace create WAITLIST
+# then paste the id below. Optional — without it, /api/waitlist returns 503.
+# [[kv_namespaces]]
+# binding = "WAITLIST"
+# id = "<your-kv-namespace-id>"
