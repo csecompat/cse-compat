@@ -33,7 +33,7 @@ the repo that compares a deployment's output against golden fixtures captured
 from the real API — if you still have a working key, capture yours now; after
 Jan 1 they can't be regenerated.
 
-Repo: https://github.com/egeoguz04/cse-compat — demo: `curl "https://[DEMO]/customsearch/v1?key=demo&cx=test&q=hello"`
+Repo: https://github.com/egeoguz04/cse-compat — demo: `curl "https://csecompat.com/customsearch/v1?key=demo&cx=test&q=hello"`
 
 ---
 
