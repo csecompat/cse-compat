@@ -111,3 +111,17 @@ describe('circuit breaker', () => {
     expect(Date.now() - start).toBeLessThan(5_000);
   }, 10_000);
 });
+
+describe('query rejections vs provider health', () => {
+  it('does not open the breaker on repeated query rejections', async () => {
+    const picky = adapter('picky', async () => {
+      throw new ProviderError('picky', 'HTTP 400: Query pattern not allowed', 400, false, false, true);
+    });
+    for (let i = 0; i < 5; i++) {
+      await expect(routeSearch(REQ, [{ adapter: picky, creds: { apiKey: 'k' } }])).rejects.toMatchObject({
+        isQueryRejected: true,
+      });
+    }
+    expect(isAvailable('picky')).toBe(true);
+  });
+});

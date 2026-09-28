@@ -81,7 +81,7 @@ async function fetchPage(
     } catch {
       // non-JSON error body: status code alone is enough
     }
-    throw new ProviderError('serper', `HTTP ${resp.status}${detail}`, resp.status);
+    throw new ProviderError('serper', `HTTP ${resp.status}${detail}`, resp.status, false, false, resp.status === 400);
   }
 
   let data: SerperResponse;

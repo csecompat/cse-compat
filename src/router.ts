@@ -135,7 +135,10 @@ export async function routeSearch(
       if (e instanceof ProviderError && e.isQuotaError && !opts.failoverOnQuota) {
         throw e;
       }
-      recordFailure(adapter.name);
+      // A rejected query says nothing about provider health: don't trip the breaker.
+      if (!(e instanceof ProviderError && e.isQueryRejected)) {
+        recordFailure(adapter.name);
+      }
     } finally {
       clearTimeout(timer);
     }

@@ -242,3 +242,23 @@ describe('failover & error mapping', () => {
     expect(status).toBe(429);
   });
 });
+
+describe('upstream query rejection', () => {
+  it('maps a provider 400 (e.g. plan-restricted query pattern) to Google-style 400, not a retryable 500', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        new Response(JSON.stringify({ message: 'Query pattern not allowed for free accounts.', statusCode: 400 }), {
+          status: 400,
+        }),
+      ),
+    );
+    const { status, body } = await run('/customsearch/v1?key=good-key&cx=abc&q=%22github.com%22', {
+      SERPER_API_KEY: 'k',
+      PROXY_KEYS: 'good-key',
+    });
+    expect(status).toBe(400);
+    expect(body.error.status).toBe('INVALID_ARGUMENT');
+    expect(body.error.message).toContain('Query pattern not allowed for free accounts.');
+  });
+});

@@ -25,6 +25,7 @@ import { parseSearchParams } from './params';
 import { formatGoogleResponse } from './googleFormat';
 import {
   backendError,
+  googleError,
   rateLimited,
   badApiKey,
   missingApiKey,
@@ -206,6 +207,16 @@ export default {
       }
       if (e instanceof ProviderError && e.isQuotaError) {
         return isDemo ? rateLimited(DEMO_CREDITS_MESSAGE) : upstreamQuotaError(e.provider);
+      }
+      if (e instanceof ProviderError && e.isQueryRejected) {
+        // The query itself was refused (not a transient failure): clients must not retry.
+        return googleError(
+          400,
+          `Your upstream search provider rejected this query (${e.message}). ` +
+            'Some provider plans restrict patterns such as quoted domain names.',
+          'invalid',
+          'INVALID_ARGUMENT',
+        );
       }
       if (e instanceof ProviderError) {
         // Say which upstream failed and how; never includes keys or query text.

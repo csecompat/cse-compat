@@ -87,6 +87,12 @@ export class ProviderError extends Error {
     public readonly isCredentialError: boolean = false,
     /** True for 429 from upstream: the customer's own quota — do NOT failover silently. */
     public readonly isQuotaError: boolean = false,
+    /**
+     * True when the upstream rejected this specific query as invalid for the
+     * caller's plan (e.g. Serper free tier: quoted domains). Another provider
+     * may still answer it, so failover is allowed; if all fail it is a 400.
+     */
+    public readonly isQueryRejected: boolean = false,
   ) {
     super(`[${provider}] ${message}`);
     this.name = 'ProviderError';
