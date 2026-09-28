@@ -10,164 +10,189 @@
 <body>
 <style>
   :root{
-    --bg:#FCFCFC; --card:#FFFFFF; --well:#0F1412; --well2:#171E1A; --well-line:#242D28;
-    --line:#E4E8E5; --line-hi:#C9D2CC;
-    --ink:#111512; --body:#57625B; --faint:#8A948E;
-    --green:#0B7A55; --green-hover:#096244; --green-ink-dark:#34D399; --green-wash:#EDF7F2;
-    --amber:#A16207; --amber-dot:#F59E0B;
-    --red:#DC2626; --red-dark:#F87171; --red-well:#2A1512; --green-well:#0E2A1F;
-    --sky:#7DD3FC; --num:#D9A514;
+    --bg:#121212; --surface:#171717; --raised:#1C1C1C; --well:#0E0E0E;
+    --line:#262626; --line-hi:#363636; --line-strong:#4A4A4A;
+    --ink:#EDEDED; --body:#A1A1A1; --faint:#6B6B6B;
+    --green:#3ECF8E; --green-hover:#5BD9A1; --green-ink:#06140D;
+    --green-wash:rgba(62,207,142,.10); --green-edge:rgba(62,207,142,.28);
+    --amber:#F5B544; --red:#F87171; --red-wash:rgba(248,113,113,.10);
+    --diff-del:#2A1616; --diff-add:#0F2A1E;
+    --sky:#7DD3FC; --num:#F5B544;
     --sans:'Geist',-apple-system,'Segoe UI',sans-serif;
     --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;
-    color-scheme:light;
+    color-scheme:dark;
   }
   *{box-sizing:border-box;}
   body{background:var(--bg);color:var(--body);font-family:var(--sans);margin:0;
        padding-block:0 80px;padding-inline:20px;line-height:1.65;font-size:15.5px;
-       -webkit-font-smoothing:antialiased;}
+       -webkit-font-smoothing:antialiased;overflow-x:clip;}
   .col{max-width:980px;margin:0 auto;}
   .narrow{max-width:760px;margin-inline:auto;}
   a{color:var(--green);text-decoration:none;}
   a:hover{text-decoration:underline;text-underline-offset:3px;}
 
   /* ---------- header ---------- */
-  header{display:flex;align-items:center;gap:20px;padding-block:18px;margin-bottom:72px;
+  header{display:flex;align-items:center;gap:20px;padding-block:16px;margin-bottom:0;
     border-bottom:1px solid var(--line);}
   .wordmark{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--ink);}
   .wordmark .caret{color:var(--green);}
-  header nav{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:13.5px;}
+  header nav{margin-left:auto;display:flex;align-items:center;gap:22px;font-size:13.5px;}
   header nav a{color:var(--body);font-weight:500;}
   header nav a:hover{color:var(--ink);text-decoration:none;}
-  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:8px;
-    font:600 13.5px var(--sans);padding:9px 16px;cursor:pointer;border:1px solid transparent;
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:7px;
+    font:600 13.5px var(--sans);padding:8px 15px;cursor:pointer;border:1px solid transparent;
     transition:background .15s ease,border-color .15s ease,color .15s ease;}
-  .btn-primary{background:var(--green);color:#fff;}
+  .btn-primary{background:var(--green);color:var(--green-ink);}
   .btn-primary:hover{background:var(--green-hover);text-decoration:none;}
-  .btn-ghost{background:var(--card);color:var(--ink);border-color:var(--line-hi);}
-  .btn-ghost:hover{border-color:var(--ink);text-decoration:none;}
+  .btn-ghost{background:var(--raised);color:var(--ink);border-color:var(--line-hi);}
+  .btn-ghost:hover{border-color:var(--line-strong);text-decoration:none;}
   .btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
 
   /* ---------- hero ---------- */
-  .hero{text-align:center;margin-bottom:30px;}
+  .hero{position:relative;text-align:center;padding-top:88px;margin-bottom:34px;}
+  .hero::before{content:"";position:absolute;inset:0 -20px -40px;z-index:0;pointer-events:none;
+    background-image:
+      linear-gradient(to right,rgba(255,255,255,.045) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(255,255,255,.045) 1px,transparent 1px);
+    background-size:44px 44px;background-position:center top;
+    -webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 20%,#000 20%,transparent 75%);
+            mask-image:radial-gradient(ellipse 60% 70% at 50% 20%,#000 20%,transparent 75%);}
+  .hero>*{position:relative;z-index:1;}
   .pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);
-    font-size:12px;color:var(--amber);background:var(--card);
-    border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:28px;}
-  .pill .dot{width:6px;height:6px;border-radius:50%;background:var(--amber-dot);flex:none;}
+    font-size:12px;color:var(--body);background:var(--surface);
+    border:1px solid var(--line-hi);border-radius:999px;padding:5px 13px 5px 11px;margin-bottom:28px;}
+  .pill .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);flex:none;}
   .pill b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;}
-  h1{font-size:clamp(34px,6.2vw,56px);line-height:1.06;font-weight:800;
-     letter-spacing:-.035em;color:var(--ink);margin:0 0 20px;text-wrap:balance;}
-  h1 .grn{color:var(--green);}
+  h1{font-size:clamp(34px,6.2vw,58px);line-height:1.05;font-weight:700;
+     letter-spacing:-.04em;color:var(--ink);margin:0 0 22px;text-wrap:balance;}
+  h1 .l2{display:block;color:var(--green);}
   .lede{font-size:17px;max-width:56ch;margin:0 auto 30px;}
-  .lede strong{color:var(--ink);font-weight:600;}
-  .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:60px;}
-  .ctas .btn{padding:12px 22px;font-size:14.5px;}
+  .lede strong{color:var(--ink);font-weight:500;}
+  .ctas{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:64px;}
+  .ctas .btn{padding:11px 20px;font-size:14px;}
 
-  /* ---------- terminal windows (dark islands) ---------- */
-  .term{background:var(--well);border:1px solid var(--well-line);border-radius:12px;
-    overflow:hidden;text-align:left;box-shadow:0 1px 2px rgba(17,21,18,.06);}
-  .term .bar{display:flex;align-items:center;gap:7px;padding:11px 14px;
-    background:var(--well2);border-bottom:1px solid var(--well-line);
-    font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;color:#5F6B65;}
-  .term .bar .d{width:10px;height:10px;border-radius:50%;flex:none;background:#2C3630;}
-  .term .bar b{color:#9CA8A1;font-weight:500;margin-left:7px;}
+  /* ---------- terminal windows ---------- */
+  .term{background:var(--surface);border:1px solid var(--line-hi);border-radius:12px;
+    overflow:hidden;text-align:left;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
+  .term .bar{display:flex;align-items:center;gap:7px;padding:10px 14px;
+    background:var(--raised);border-bottom:1px solid var(--line);
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--faint);}
+  .term .bar .d{width:10px;height:10px;border-radius:50%;flex:none;background:#2E2E2E;}
+  .term .bar b{color:var(--body);font-weight:500;margin-left:7px;}
   .term .bar .right{margin-left:auto;}
   .scroll{overflow-x:auto;}
   .term pre{margin:0;padding:16px 0;font-family:var(--mono);font-size:13.5px;
-    line-height:1.85;min-width:max-content;color:#C9D4CE;}
+    line-height:1.85;min-width:max-content;color:#C8C8C8;background:var(--well);}
   .ln{display:block;padding-inline:16px;white-space:pre;}
-  .del{background:var(--red-well);color:var(--red-dark);}
-  .add{background:var(--green-well);color:var(--green-ink-dark);}
-  .ctx{color:#5F6B65;}
-  .diffnote{color:var(--faint);font-size:13px;font-family:var(--mono);
-    margin:14px 0 0;text-align:center;}
-  .diffnote em{color:var(--body);font-style:normal;}
+  .del{background:var(--diff-del);color:var(--red);}
+  .add{background:var(--diff-add);color:var(--green);}
+  .ctx{color:var(--faint);}
 
-  section{margin-bottom:96px;}
-  .eyebrow{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;
+  /* works-with strip */
+  .strip{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;
+    gap:10px 22px;margin:26px auto 0;font-size:13px;color:var(--faint);}
+  .strip .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--faint);}
+  .strip span.it{color:var(--body);font-weight:500;}
+  .strip .sep{width:1px;height:14px;background:var(--line-hi);}
+  .strip .grp{display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:8px 14px;}
+  .strip{gap:12px 36px;}
+
+  section{margin-bottom:104px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.14em;
      text-transform:uppercase;color:var(--green);margin:0 0 12px;}
-  .h2{font-size:clamp(22px,3.4vw,30px);font-weight:700;letter-spacing:-.025em;
-     color:var(--ink);margin:0 0 10px;text-wrap:balance;}
-  .sub{margin:0 0 28px;max-width:60ch;}
+  .h2{font-size:clamp(24px,3.6vw,34px);font-weight:700;letter-spacing:-.03em;line-height:1.15;
+     color:var(--ink);margin:0 0 12px;text-wrap:balance;}
+  .h2 .mut{color:var(--faint);}
+  .sub{margin:0 0 30px;max-width:60ch;}
+  .rule{height:1px;background:var(--line);margin:0 0 96px;}
 
   /* ---------- live demo ---------- */
-  .demo .bar .live{color:var(--green-ink-dark);}
+  .demo .bar .live{color:var(--green);}
   .demo .bar .live::before{content:"●";margin-right:6px;}
-  .demoform{display:flex;border-bottom:1px solid var(--well-line);}
-  .demoform .p{font-family:var(--mono);color:var(--green-ink-dark);padding:14px 0 14px 16px;flex:none;font-size:14px;}
-  .demoform input{flex:1;min-width:0;background:transparent;border:0;color:#F2F6F3;
+  .demoform{display:flex;border-bottom:1px solid var(--line);background:var(--surface);}
+  .demoform .p{font-family:var(--mono);color:var(--green);padding:14px 0 14px 16px;flex:none;font-size:14px;}
+  .demoform input{flex:1;min-width:0;background:transparent;border:0;color:var(--ink);
     font:14px var(--mono);padding:14px 10px;}
-  .demoform input::placeholder{color:#5F6B65;}
+  .demoform input::placeholder{color:var(--faint);}
   .demoform input:focus{outline:none;}
-  .demoform button{flex:none;background:var(--green);color:#fff;border:0;
+  .demoform:focus-within{box-shadow:inset 0 -1px 0 var(--green);}
+  .demoform button{flex:none;background:var(--green);color:var(--green-ink);border:0;
     font:600 13px var(--sans);padding:0 22px;cursor:pointer;transition:background .15s ease;}
-  .demoform button:hover{background:#096244;}
-  .demoform button:focus-visible{outline:2px solid #fff;outline-offset:-4px;}
-  .statusline{font-family:var(--mono);font-size:12px;color:#5F6B65;
-    padding:10px 16px;border-bottom:1px solid var(--well-line);display:flex;gap:18px;flex-wrap:wrap;}
-  .statusline .ok{color:var(--green-ink-dark);}
-  .statusline .warn{color:#FBBF24;}
-  #demoout{max-height:360px;overflow:auto;}
+  .demoform button:hover{background:var(--green-hover);}
+  .demoform button:focus-visible{outline:2px solid var(--ink);outline-offset:-4px;}
+  .statusline{font-family:var(--mono);font-size:12px;color:var(--faint);background:var(--surface);
+    padding:10px 16px;border-bottom:1px solid var(--line);display:flex;gap:18px;flex-wrap:wrap;}
+  .statusline .ok{color:var(--green);}
+  .statusline .warn{color:var(--amber);}
+  #demoout{max-height:360px;overflow:auto;background:var(--well);}
   #demoout pre{min-width:0;white-space:pre;font-size:12.5px;line-height:1.75;}
-  .jk{color:var(--green-ink-dark);} .js{color:var(--sky);} .jn{color:#FBBF24;} .jp{color:#5F6B65;}
+  .jk{color:var(--green);} .js{color:var(--sky);} .jn{color:var(--num);} .jp{color:var(--faint);}
 
   /* ---------- bento grid ---------- */
-  .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
-    padding:22px;transition:border-color .15s ease;}
-  .card:hover{border-color:var(--line-hi);}
+  .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:24px;box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+    transition:border-color .15s ease,background .15s ease;}
+  .card:hover{border-color:var(--line-hi);background:#191919;}
   .card.span3{grid-column:span 3;}
   .card.span2{grid-column:span 2;}
   @media (max-width:820px){.card.span3,.card.span2{grid-column:span 6;}}
+  .card .ic{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+    background:var(--raised);border:1px solid var(--line-hi);color:var(--green);
+    font-family:var(--mono);font-size:13px;margin-bottom:16px;}
   .card h3{font-size:15.5px;font-weight:600;color:var(--ink);margin:0 0 8px;letter-spacing:-.01em;}
   .card p{margin:0;font-size:14px;}
-  .card code{font-family:var(--mono);font-size:12.5px;color:var(--green);
-    background:var(--green-wash);border-radius:5px;padding:1px 5px;white-space:nowrap;}
-  .card .mini{margin-top:16px;background:var(--well);border-radius:8px;
+  .card code{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    background:var(--raised);border:1px solid var(--line-hi);border-radius:5px;padding:1px 5px;white-space:nowrap;}
+  .card .mini{margin-top:18px;background:var(--well);border:1px solid var(--line);border-radius:8px;
     padding:12px 14px;font-family:var(--mono);font-size:12px;
-    line-height:1.8;overflow-x:auto;white-space:pre;color:#9CA8A1;}
-  .chipline{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+    line-height:1.8;overflow-x:auto;white-space:pre;color:var(--body);}
+  .chipline{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;}
   .chip{font-family:var(--mono);font-size:11.5px;color:var(--body);
-    background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 9px;}
-  .chip.good{color:var(--green);background:var(--green-wash);border-color:transparent;}
-  .chip.bad{color:var(--red);text-decoration:line-through;}
-  .flow{display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap;
+    background:var(--raised);border:1px solid var(--line-hi);border-radius:6px;padding:4px 9px;}
+  .chip.good{color:var(--green);background:var(--green-wash);border-color:var(--green-edge);}
+  .chip.bad{color:var(--red);background:var(--red-wash);border-color:rgba(248,113,113,.25);text-decoration:line-through;}
+  .flow{display:flex;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap;
     font-family:var(--mono);font-size:12px;}
-  .node{background:var(--bg);border:1px solid var(--line);border-radius:8px;
-    padding:8px 12px;color:var(--body);}
-  .node.dead{color:var(--red);}
-  .node.alive{color:var(--green);background:var(--green-wash);border-color:transparent;}
+  .node{background:var(--raised);border:1px solid var(--line-hi);border-radius:7px;
+    padding:7px 11px;color:var(--body);}
+  .node.dead{color:var(--red);border-color:rgba(248,113,113,.25);background:var(--red-wash);}
+  .node.alive{color:var(--green);background:var(--green-wash);border-color:var(--green-edge);}
   .arrow{color:var(--faint);}
-  .bignum{font-family:var(--mono);font-size:32px;font-weight:600;color:var(--ink);
-    letter-spacing:-.02em;margin-top:14px;font-variant-numeric:tabular-nums;}
-  .bignum small{font-size:13px;color:var(--faint);font-weight:400;margin-left:6px;}
+  .hop{display:inline-flex;align-items:center;gap:10px;white-space:nowrap;}
+  .bignum{font-family:var(--mono);font-size:32px;font-weight:500;color:var(--ink);
+    letter-spacing:-.03em;margin-top:16px;font-variant-numeric:tabular-nums;}
+  .bignum small{font-size:12.5px;color:var(--faint);font-weight:400;margin-left:6px;letter-spacing:0;}
 
   /* ---------- steps ---------- */
-  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;counter-reset:step;}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;counter-reset:step;}
   @media (max-width:820px){.steps{grid-template-columns:1fr;}}
-  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;}
+  .step{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035);}
   .step::before{counter-increment:step;content:"0" counter(step);
-    font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green);
-    display:inline-block;background:var(--green-wash);border-radius:6px;
-    padding:3px 8px;margin-bottom:14px;}
-  .step p{margin:0 0 12px;font-size:14px;}
+    font-family:var(--mono);font-size:12px;font-weight:500;color:var(--green);
+    display:inline-block;background:var(--green-wash);border:1px solid var(--green-edge);border-radius:6px;
+    padding:2px 8px;margin-bottom:16px;}
+  .step p{margin:0 0 14px;font-size:14px;}
   .step p strong{color:var(--ink);font-weight:600;}
-  .step pre{margin:0;font-family:var(--mono);font-size:12px;color:#C9D4CE;
-    background:var(--well);border-radius:8px;padding:11px 13px;overflow-x:auto;line-height:1.7;}
-  .step pre .c{color:#5F6B65;}
+  .step pre{margin:0;font-family:var(--mono);font-size:12px;color:#C8C8C8;
+    background:var(--well);border:1px solid var(--line);border-radius:8px;padding:11px 13px;overflow-x:auto;line-height:1.7;}
+  .step pre .c{color:var(--faint);}
 
   /* ---------- waitlist ---------- */
-  .wait{background:var(--card);border:1px solid var(--line);border-radius:14px;
-    padding:34px 30px;}
+  .wait{background:var(--surface);border:1px solid var(--line-hi);border-radius:14px;
+    padding:36px 32px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
   .wait .h2{margin-bottom:8px;}
-  .wait .pitch{margin:0 0 22px;max-width:58ch;font-size:15px;}
-  .wait .pitch strong{color:var(--ink);font-weight:600;}
+  .wait .pitch{margin:0 0 24px;max-width:58ch;font-size:15px;}
+  .wait .pitch strong{color:var(--ink);font-weight:500;}
   form.wl{display:flex;gap:10px;flex-wrap:wrap;}
-  form.wl input{flex:1 1 260px;min-width:0;background:var(--bg);
-    border:1px solid var(--line-hi);border-radius:8px;color:var(--ink);
-    font:14px var(--mono);padding:13px 15px;}
+  form.wl input{flex:1 1 260px;min-width:0;background:var(--well);
+    border:1px solid var(--line-hi);border-radius:7px;color:var(--ink);
+    font:14px var(--mono);padding:12px 14px;}
   form.wl input::placeholder{color:var(--faint);}
-  form.wl input:focus{outline:2px solid var(--green);outline-offset:1px;border-color:transparent;}
-  form.wl .btn{padding:13px 24px;font-size:14px;}
+  form.wl input:focus{outline:none;border-color:var(--green);}
+  form.wl .btn{padding:12px 22px;font-size:14px;}
   .msg{margin:14px 0 0;font-family:var(--mono);font-size:13px;}
   .msg.ok{color:var(--green);}
   .msg.warn{color:var(--amber);}
@@ -197,10 +222,10 @@
   <div class="hero">
     <span class="pill" role="status"><span class="dot" aria-hidden="true"></span>
       customsearch/v1 shuts down in <b id="days">—</b> days · Jan 1, 2027</span>
-    <h1>Google is retiring Custom Search.<br>Your code doesn't have to <span class="grn">know</span>.</h1>
+    <h1>Google is retiring Custom Search.<span class="l2">Your code doesn't have to know.</span></h1>
     <p class="lede"><strong>cse-compat</strong> is an open-source Cloudflare Worker serving the same
       endpoint, parameters, response schema, and error envelope as the retiring
-      Custom Search JSON API — backed by <strong>your own key</strong> from a modern
+      Custom Search JSON API, backed by <strong>your own key</strong> from a modern
       search provider.</p>
     <div class="ctas">
       <a class="btn btn-primary" href="#demo">Run it live ↓</a>
@@ -212,19 +237,27 @@
     <div class="term">
       <div class="bar"><span class="d"></span><span class="d"></span><span class="d"></span>
         <b>config/search.env</b><span class="right">the entire migration</span></div>
-      <div class="scroll"><pre><span class="ln ctx">  SEARCH_CX=017576662512468239146:omuauf_lfve</span><span class="ln del">- SEARCH_BASE=https://www.googleapis.com/customsearch/v1</span><span class="ln add">+ SEARCH_BASE=https://csecompat.com/customsearch/v1</span><span class="ln ctx">  # items[].link, items[].snippet, queries.nextPage — unchanged</span></pre></div>
+      <div class="scroll"><pre><span class="ln ctx">  SEARCH_CX=017576662512468239146:omuauf_lfve</span><span class="ln del">- SEARCH_BASE=https://www.googleapis.com/customsearch/v1</span><span class="ln add">+ SEARCH_BASE=https://csecompat.com/customsearch/v1</span><span class="ln ctx">  # items[].link, items[].snippet, queries.nextPage: unchanged</span></pre></div>
     </div>
-    <p class="diffnote">2 lines changed · 0 parsers rewritten · <em>an afternoon, not a sprint</em></p>
+    <div class="strip">
+      <div class="grp"><span class="lbl">Drop-in for</span>
+        <span class="it">raw HTTP</span><span class="sep"></span>
+        <span class="it">google-api-python-client</span><span class="sep"></span>
+        <span class="it">googleapis (Node)</span></div>
+      <div class="grp"><span class="lbl">Backed by</span>
+        <span class="it">Brave Search</span><span class="sep"></span>
+        <span class="it">serper.dev</span></div>
+    </div>
   </div>
 
-  <div style="height:80px"></div>
+  <div style="height:104px"></div>
 
   <section id="demo" class="narrow">
-    <p class="eyebrow">Show, don't tell</p>
-    <h2 class="h2">Run a real request right now</h2>
-    <p class="sub">A live query against this very endpoint with the public
-      <code style="font-family:var(--mono);color:var(--green)">demo</code> key —
-      watch Google's exact legacy schema come back.</p>
+    <p class="eyebrow">Live demo</p>
+    <h2 class="h2">Run a real request. <span class="mut">Right here.</span></h2>
+    <p class="sub">A live query against this endpoint with the public
+      <code style="font-family:var(--mono);color:var(--ink)">demo</code> key.
+      Google's exact legacy schema comes back.</p>
     <div class="term demo">
       <div class="bar"><span class="d"></span><span class="d"></span><span class="d"></span>
         <b>GET /customsearch/v1</b><span class="right live" id="livemark">live endpoint</span></div>
@@ -240,37 +273,41 @@
   </section>
 
   <section>
-    <p class="eyebrow">What drop-in means here</p>
-    <h2 class="h2">The legacy contract, kept honest</h2>
-    <p class="sub">Not "similar JSON" — the same envelope your parser was written
+    <p class="eyebrow">Compatibility</p>
+    <h2 class="h2">The legacy contract. <span class="mut">Kept honest.</span></h2>
+    <p class="sub">Not "similar JSON." The same envelope your parser was written
       against, pinned by a public conformance suite.</p>
     <div class="bento">
       <div class="card span3">
+        <div class="ic" aria-hidden="true">{ }</div>
         <h3>Byte-exact response schema</h3>
         <p><code>items[]</code>, <code>htmlSnippet</code> highlighting,
-          <code>queries.nextPage</code> pagination, honest <code>totalResults</code> —
-          the fields your code already reads, where it already reads them.</p>
+          <code>queries.nextPage</code> pagination, honest <code>totalResults</code>.
+          The fields your code already reads, where it already reads them.</p>
         <div class="mini"><span class="jp">{</span> <span class="jk">"kind"</span>: <span class="js">"customsearch#search"</span>,
-  <span class="jk">"items"</span>: <span class="jp">[{</span> <span class="jk">"title"</span>, <span class="jk">"link"</span>, <span class="jk">"snippet"</span>, <span class="jk">"htmlSnippet"</span>, <span class="jk">"displayLink"</span> <span class="jp">}]</span>,
+  <span class="jk">"items"</span>: <span class="jp">[{</span> <span class="jk">"title"</span>, <span class="jk">"link"</span>, <span class="jk">"snippet"</span>, <span class="jk">"htmlSnippet"</span> <span class="jp">}]</span>,
   <span class="jk">"queries"</span>: <span class="jp">{</span> <span class="jk">"request"</span>, <span class="jk">"nextPage"</span>, <span class="jk">"previousPage"</span> <span class="jp">} }</span></div>
       </div>
       <div class="card span3">
+        <div class="ic" aria-hidden="true">⇄</div>
         <h3>Failover built in</h3>
         <p>Per-provider circuit breaker with timeout budgets. Pagination stays on
           one index, so page 2 never skips or repeats.</p>
         <div class="flow">
-          <span class="node">request</span><span class="arrow">─▶</span>
-          <span class="node dead">provider A ✕</span><span class="arrow">─▶</span>
-          <span class="node alive">provider B ✓</span><span class="arrow">─▶</span>
-          <span class="node">200 OK</span>
+          <span class="node">request</span>
+          <span class="hop"><span class="arrow">→</span><span class="node dead">provider A ✕</span></span>
+          <span class="hop"><span class="arrow">→</span><span class="node alive">provider B ✓</span></span>
+          <span class="hop"><span class="arrow">→</span><span class="node">200 OK</span></span>
         </div>
       </div>
       <div class="card span2">
+        <div class="ic" aria-hidden="true">⊕</div>
         <h3>Bring your own key</h3>
-        <p>Your Brave or serper.dev key; you stay their direct customer. No resale,
-          no markup — a translation layer, nothing more.</p>
+        <p>Your Brave or serper.dev key. You stay their direct customer. No resale,
+          no markup, just a translation layer.</p>
       </div>
       <div class="card span2">
+        <div class="ic" aria-hidden="true">!</div>
         <h3>Google-exact errors</h3>
         <p>Quota answers the way your client library expects.</p>
         <div class="chipline">
@@ -280,20 +317,23 @@
         </div>
       </div>
       <div class="card span2">
+        <div class="ic" aria-hidden="true">∅</div>
         <h3>Stateless by design</h3>
         <p>Queries are never logged or stored. The worker is a pure pipe.</p>
         <div class="bignum">0 <small>bytes of query data retained</small></div>
       </div>
       <div class="card span3">
+        <div class="ic" aria-hidden="true">✓</div>
         <h3>Proven, not promised</h3>
-        <p>A public conformance suite pins the contract — pagination windows,
+        <p>A public conformance suite pins the contract: pagination windows,
           error envelopes, zero-result behavior, the 100-result cap.</p>
-        <div class="bignum">37/37 <small>conformance tests passing · <a href="https://github.com/csecompat/cse-compat">read them</a></small></div>
+        <div class="bignum">37/37 <small>tests passing · <a href="https://github.com/csecompat/cse-compat">read them</a></small></div>
       </div>
       <div class="card span3">
+        <div class="ic" aria-hidden="true">§</div>
         <h3>Apache-2.0, self-hostable forever</h3>
         <p>The core is open source. Run it on Cloudflare's free tier and it costs
-          you nothing but your own search-API usage. No lock-in — that's the point
+          you nothing but your own search-API usage. No lock-in, which is the point
           of the whole project.</p>
       </div>
     </div>
@@ -301,8 +341,8 @@
 
   <section>
     <p class="eyebrow">Self-host</p>
-    <h2 class="h2">Deployed in three steps</h2>
-    <div class="steps" style="margin-top:26px">
+    <h2 class="h2">Deployed in three steps.</h2>
+    <div class="steps" style="margin-top:30px">
       <div class="step">
         <p><strong>Deploy the worker</strong> to your Cloudflare account.</p>
         <pre>git clone github.com/csecompat/cse-compat
@@ -310,7 +350,7 @@ cd cse-compat
 npm i && npx wrangler deploy</pre>
       </div>
       <div class="step">
-        <p><strong>Add your upstream key</strong> — one provider is enough.</p>
+        <p><strong>Add your upstream key.</strong> One provider is enough.</p>
         <pre>npx wrangler secret put \
   BRAVE_API_KEY
 <span class="c"># or SERPER_API_KEY</span></pre>
@@ -326,10 +366,10 @@ https://cse.you.workers.dev
 
   <section id="waitlist" class="wait">
     <p class="eyebrow">Managed version</p>
-    <h2 class="h2">Zero infrastructure on your side</h2>
+    <h2 class="h2">Zero infrastructure on your side.</h2>
     <p class="pitch">The hosted version adds <strong>multi-provider fallback</strong>,
-      <strong>cx site-restriction profiles</strong>, usage analytics, and an SLA —
-      same endpoint, no worker to run. Launching before the shutdown.</p>
+      <strong>cx site-restriction profiles</strong>, usage analytics, and an SLA.
+      Same endpoint, no worker to run. Launching before the shutdown.</p>
     <form class="wl" id="wl" novalidate>
       <label for="em" hidden>Email</label>
       <input id="em" type="email" placeholder="you@company.dev" autocomplete="email" required>
@@ -416,7 +456,7 @@ https://cse.you.workers.dev
         })
         .catch(function () {
           livemark.textContent = 'design preview';
-          show('<span class="warn">preview mode</span><span>sample response — the live box runs at csecompat.com</span>', SAMPLE);
+          show('<span class="warn">preview mode</span><span>sample response; the live box runs at csecompat.com</span>', SAMPLE);
         })
         .finally(function () { busy = false; });
     }
@@ -426,6 +466,10 @@ https://cse.you.workers.dev
       var q = input.value.trim();
       if (q) run(q);
     });
+
+    // Resting state: an example response, clearly labeled, so the box is
+    // never empty. Pressing Send replaces it with a live request.
+    show('<span>example response</span><span>press Send to run it live</span>', SAMPLE);
   })();
 
   // ----- Waitlist -----
@@ -438,7 +482,7 @@ https://cse.you.workers.dev
       e.preventDefault();
       var email = input.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        show('that does not look like an email address', 'warn');
+        show('That does not look like an email address.', 'warn');
         return;
       }
       fetch('/api/waitlist', {
@@ -446,11 +490,11 @@ https://cse.you.workers.dev
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email })
       }).then(function (r) {
-        if (r.ok) { show('✓ you are on the list — we will email you before the shutdown', 'ok'); form.reset(); }
-        else if (r.status === 503) { show('signups are not configured on this deployment yet', 'warn'); }
-        else { show('something went wrong — try again in a minute', 'warn'); }
+        if (r.ok) { show('✓ You are on the list. We will email you before the shutdown.', 'ok'); form.reset(); }
+        else if (r.status === 503) { show('Signups are not configured on this deployment yet.', 'warn'); }
+        else { show('Something went wrong. Try again in a minute.', 'warn'); }
       }).catch(function () {
-        show('design preview — signups go live on the deployed site', 'warn');
+        show('Design preview: signups go live on the deployed site.', 'warn');
       });
     });
   })();
