@@ -207,6 +207,10 @@ export default {
       if (e instanceof ProviderError && e.isQuotaError) {
         return isDemo ? rateLimited(DEMO_CREDITS_MESSAGE) : upstreamQuotaError(e.provider);
       }
+      if (e instanceof ProviderError) {
+        // Say which upstream failed and how; never includes keys or query text.
+        return backendError(`Backend Error (upstream ${e.message})`);
+      }
       return backendError();
     }
   },

@@ -74,7 +74,14 @@ async function fetchPage(
     throw new ProviderError('serper', 'upstream quota exhausted (429)', 429, false, true);
   }
   if (!resp.ok) {
-    throw new ProviderError('serper', `upstream error ${resp.status}`, resp.status);
+    let detail = '';
+    try {
+      const j = (await resp.json()) as { message?: unknown };
+      if (typeof j.message === 'string') detail = `: ${j.message.slice(0, 120)}`;
+    } catch {
+      // non-JSON error body: status code alone is enough
+    }
+    throw new ProviderError('serper', `HTTP ${resp.status}${detail}`, resp.status);
   }
 
   let data: SerperResponse;
