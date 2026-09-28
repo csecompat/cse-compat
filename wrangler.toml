@@ -31,3 +31,13 @@ directory = "./site"
 [[kv_namespaces]]
 binding = "WAITLIST"
 id = "e4c7339343d2416dbd5b73bd06ebac73"
+
+# Per-visitor throttle for the public "demo" key: 10 requests / 60 s per IP.
+# Private keys are never throttled. Remove this block if you self-host without a demo key.
+[[ratelimits]]
+name = "DEMO_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 10
+  period = 60

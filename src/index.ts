@@ -25,6 +25,7 @@ import { parseSearchParams } from './params';
 import { formatGoogleResponse } from './googleFormat';
 import {
   backendError,
+  rateLimited,
   badApiKey,
   missingApiKey,
   notFound,
@@ -46,7 +47,19 @@ export interface Env {
   TIMEOUT_MS?: string;
   /** Optional KV namespace for landing-page waitlist signups. */
   WAITLIST?: { put(key: string, value: string): Promise<void> };
+  /** Optional Workers rate-limit binding applied to the public demo key, per visitor IP. */
+  DEMO_LIMITER?: { limit(opts: { key: string }): Promise<{ success: boolean }> };
+  /** The public demo key (default "demo"). Requests with it get demo limits. */
+  DEMO_KEY?: string;
 }
+
+export const DEMO_RATE_MESSAGE =
+  'Demo limit reached: the public demo key allows 10 requests per minute per visitor. ' +
+  'For unlimited use, self-host with your own key: https://github.com/csecompat/cse-compat';
+
+export const DEMO_CREDITS_MESSAGE =
+  'The public demo has used up its search credits for now. Self-host with your own ' +
+  '(free-tier) key to keep testing: https://github.com/csecompat/cse-compat';
 
 const ADAPTERS = { brave: braveAdapter, serper: serperAdapter } as const;
 type ProviderName = keyof typeof ADAPTERS;
@@ -124,6 +137,16 @@ export default {
     const parsed = parseSearchParams(url, siteRestrict);
     if (!parsed.ok) return parsed.response;
 
+    // Public demo key: throttle per visitor so many people can try it
+    // without one script draining the shared upstream credits.
+    const presentedKey = url.searchParams.get('key') ?? request.headers.get('x-goog-api-key');
+    const isDemo = presentedKey === (env.DEMO_KEY ?? 'demo');
+    if (isDemo && env.DEMO_LIMITER) {
+      const ip = request.headers.get('cf-connecting-ip') ?? 'unknown';
+      const { success } = await env.DEMO_LIMITER.limit({ key: `demo:${ip}` });
+      if (!success) return rateLimited(DEMO_RATE_MESSAGE);
+    }
+
     const providers = buildProviders(env);
     if (providers.length === 0) {
       return backendError('No upstream provider configured. Set BRAVE_API_KEY and/or SERPER_API_KEY.');
@@ -148,7 +171,7 @@ export default {
         return upstreamCredentialError(e.provider);
       }
       if (e instanceof ProviderError && e.isQuotaError) {
-        return upstreamQuotaError(e.provider);
+        return isDemo ? rateLimited(DEMO_CREDITS_MESSAGE) : upstreamQuotaError(e.provider);
       }
       return backendError();
     }
