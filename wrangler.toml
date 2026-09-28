@@ -21,6 +21,6 @@ directory = "./site"
 # Waitlist signups land in KV. Create with:
 #   npx wrangler kv namespace create WAITLIST
 # then paste the id below. Optional — without it, /api/waitlist returns 503.
-# [[kv_namespaces]]
-# binding = "WAITLIST"
-# id = "<your-kv-namespace-id>"
+[[kv_namespaces]]
+binding = "WAITLIST"
+id = "e4c7339343d2416dbd5b73bd06ebac73"
