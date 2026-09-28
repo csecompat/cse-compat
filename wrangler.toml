@@ -3,6 +3,13 @@ name = "cse-compat"
 main = "src/index.ts"
 compatibility_date = "2026-09-01"
 
+# Custom domains (zone must be in your Cloudflare account — it is, bought there).
+# wrangler creates the DNS records and certificates automatically on deploy.
+routes = [
+  { pattern = "csecompat.com", custom_domain = true },
+  { pattern = "www.csecompat.com", custom_domain = true },
+]
+
 # Secrets (set with `wrangler secret put <NAME>`):
 #   BRAVE_API_KEY      your own Brave Search API subscription token (BYOK)
 #   SERPER_API_KEY     your own serper.dev key (BYOK)
