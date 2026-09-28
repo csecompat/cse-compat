@@ -37,6 +37,7 @@ import { routeSearch, DEFAULT_TIMEOUT_MS } from './router';
 import type { RoutedProvider } from './router';
 import { ProviderError } from './types';
 import { braveAdapter } from './adapters/brave';
+import { handleStats, type StatsKV } from './stats';
 import { serperAdapter } from './adapters/serper';
 
 export interface Env {
@@ -50,7 +51,14 @@ export interface Env {
   WAITLIST?: {
     get(key: string): Promise<string | null>;
     put(key: string, value: string, opts?: { expirationTtl?: number }): Promise<void>;
+    list?(opts: { prefix: string; cursor?: string }): Promise<{
+      keys: { name: string }[];
+      list_complete: boolean;
+      cursor?: string;
+    }>;
   };
+  /** Secret for the private /stats page (16+ chars). Unset = page disabled. */
+  STATS_KEY?: string;
   /** Optional Workers rate-limit binding applied to the public demo key, per visitor IP. */
   DEMO_LIMITER?: { limit(opts: { key: string }): Promise<{ success: boolean }> };
   /** The public demo key (default "demo"). Requests with it get demo limits. */
@@ -152,6 +160,14 @@ export default {
     // [assets] binding in wrangler.toml; the worker only sees non-asset routes).
     if (path === '/api/waitlist' && request.method === 'POST') {
       return handleWaitlist(request, env);
+    }
+    if (path === '/stats' && request.method === 'GET') {
+      const kv = env.WAITLIST;
+      return handleStats(url, {
+        STATS_KEY: env.STATS_KEY,
+        DEMO_DAILY_CAP: env.DEMO_DAILY_CAP,
+        WAITLIST: kv && kv.list ? (kv as StatsKV) : undefined,
+      });
     }
 
     const siteRestrict = path === '/customsearch/v1/siterestrict';
