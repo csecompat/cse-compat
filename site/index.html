@@ -5,140 +5,209 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Open-source drop-in compatible endpoint for the retiring Google Custom Search JSON API. Bring your own search key; change one URL; keep your code.">
 <title>cse-compat</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700;800&display=swap">
 </head>
 <body>
 <style>
   :root{
-    --bg:#0D1117; --panel:#151B24; --panel2:#10151D; --line:#232B38;
-    --ink:#E7EDF4; --mut:#93A0B4; --faint:#5C6879;
-    --green:#46C160; --green-dim:#1C3524; --red:#E5534B; --red-dim:#3A1F1F;
-    --amber:#E8B93F;
+    --bg:#050807; --panel:#0A100C; --panel2:#070C09; --line:#1C2B21; --line2:#14201A;
+    --ink:#D7E7DA; --mut:#8AA391; --faint:#5A7263;
+    --green:#3DF08B; --green-dim:#123024; --green-ghost:rgba(61,240,139,.08);
+    --amber:#F5B23F; --red:#FF6E61; --red-dim:#33150F;
     --sans:'IBM Plex Sans',-apple-system,'Segoe UI',sans-serif;
     --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
     color-scheme:dark;
   }
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);margin:0;
-       padding-block:0 64px;padding-inline:20px;line-height:1.6;font-size:16px;}
-  .col{max-width:720px;margin:0 auto;}
-  a{color:var(--ink);}
+       padding-block:0 72px;padding-inline:20px;line-height:1.65;font-size:16px;
+       position:relative;}
+  /* CRT atmosphere: faint scanlines + phosphor bloom, never louder than the text */
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:2;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px);
+    opacity:.35;mix-blend-mode:multiply;}
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+    background:radial-gradient(90% 60% at 50% 0%,var(--green-ghost),transparent 70%);}
+  .col{max-width:760px;margin:0 auto;position:relative;z-index:3;}
+  a{color:var(--green);text-decoration-color:rgba(61,240,139,.4);}
 
-  /* deadline bar */
+  /* deadline strip */
   .deadline{display:flex;flex-wrap:wrap;align-items:center;gap:10px;
-    font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;
-    color:var(--amber);border-bottom:1px solid var(--line);
-    padding-block:14px;margin-bottom:56px;}
+    font-family:var(--mono);font-size:12.5px;letter-spacing:.05em;
+    border-bottom:1px solid var(--line);padding-block:14px;margin-bottom:52px;
+    color:var(--amber);}
   .deadline .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);
-    box-shadow:0 0 10px var(--amber);flex:none;}
-  .deadline .days{color:var(--ink);font-weight:700;}
+    box-shadow:0 0 12px var(--amber);flex:none;}
+  .deadline b{color:var(--ink);font-weight:800;font-variant-numeric:tabular-nums;}
   .deadline .date{color:var(--faint);}
 
-  h1{font-size:clamp(30px,6vw,44px);line-height:1.12;font-weight:700;
-     letter-spacing:-.02em;margin:0 0 18px;text-wrap:balance;}
-  .lede{color:var(--mut);font-size:17.5px;max-width:60ch;margin:0 0 36px;}
+  .promptline{font-family:var(--mono);font-size:13px;color:var(--faint);margin:0 0 14px;}
+  .promptline .p{color:var(--green);}
+  h1{font-family:var(--mono);font-size:clamp(26px,5.4vw,40px);line-height:1.2;
+     font-weight:800;letter-spacing:-.01em;margin:0 0 18px;text-wrap:balance;}
+  h1 .hl{color:var(--green);text-shadow:0 0 18px rgba(61,240,139,.45);}
+  .cursor{display:inline-block;width:.55em;height:1.05em;background:var(--green);
+    vertical-align:-.12em;margin-left:6px;box-shadow:0 0 14px rgba(61,240,139,.6);}
+  .lede{color:var(--mut);font-size:17px;max-width:62ch;margin:0 0 40px;}
   .lede strong{color:var(--ink);font-weight:600;}
 
-  /* the diff — hero thesis */
-  .diff{font-family:var(--mono);font-size:13.5px;line-height:1.9;
-    background:var(--panel2);border:1px solid var(--line);border-radius:8px;
-    margin:0 0 14px;overflow-x:auto;}
-  .diff .bar{display:flex;gap:8px;align-items:center;padding:9px 14px;
-    border-bottom:1px solid var(--line);color:var(--faint);font-size:11.5px;
-    letter-spacing:.06em;}
-  .diff .bar b{color:var(--mut);font-weight:500;}
-  .diff pre{margin:0;padding:14px 0;min-width:max-content;}
-  .diff .ln{display:block;padding-inline:14px;white-space:pre;}
-  .diff .del{background:var(--red-dim);color:var(--red);}
-  .diff .add{background:var(--green-dim);color:var(--green);}
-  .diff .ctx{color:var(--faint);}
-  .diffnote{color:var(--faint);font-size:13.5px;font-family:var(--mono);margin:0 0 64px;}
+  /* terminal windows */
+  .term{background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.5),0 18px 50px -24px rgba(61,240,139,.18);
+    overflow:hidden;margin:0 0 14px;}
+  .term .bar{display:flex;align-items:center;gap:8px;padding:10px 14px;
+    background:var(--panel);border-bottom:1px solid var(--line);
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;color:var(--faint);}
+  .term .bar .d{width:10px;height:10px;border-radius:50%;background:var(--line);flex:none;}
+  .term .bar .d:first-child{background:#3A5245;}
+  .term .bar b{color:var(--mut);font-weight:500;margin-left:6px;}
+  .term .bar .right{margin-left:auto;color:var(--faint);}
+  .scroll{overflow-x:auto;}
+  .term pre{margin:0;padding:16px 0;font-family:var(--mono);font-size:13.5px;
+    line-height:1.85;min-width:max-content;}
+  .ln{display:block;padding-inline:16px;white-space:pre;}
+  .del{background:var(--red-dim);color:var(--red);}
+  .add{background:var(--green-dim);color:var(--green);}
+  .ctx{color:var(--faint);}
+  .diffnote{color:var(--faint);font-size:13px;font-family:var(--mono);margin:0 0 60px;}
   .diffnote em{color:var(--mut);font-style:normal;}
 
-  h2{font-size:13px;font-family:var(--mono);font-weight:500;letter-spacing:.14em;
-     text-transform:uppercase;color:var(--faint);margin:0 0 22px;}
+  h2{font-size:12.5px;font-family:var(--mono);font-weight:700;letter-spacing:.18em;
+     text-transform:uppercase;color:var(--green);margin:0 0 20px;}
+  h2::before{content:"// ";color:var(--faint);}
   section{margin-bottom:64px;}
 
+  /* live demo */
+  .demo .bar .live{color:var(--green);}
+  .demo .bar .live::before{content:"●";margin-right:6px;text-shadow:0 0 8px var(--green);}
+  .demoform{display:flex;gap:0;border-bottom:1px solid var(--line);}
+  .demoform .p{font-family:var(--mono);color:var(--green);padding:13px 0 13px 16px;flex:none;}
+  .demoform input{flex:1;min-width:0;background:transparent;border:0;color:var(--ink);
+    font:14px var(--mono);padding:13px 10px;}
+  .demoform input::placeholder{color:var(--faint);}
+  .demoform input:focus{outline:none;}
+  .demoform:focus-within{border-color:var(--green);}
+  .demoform button{flex:none;background:var(--green);color:#04120A;border:0;
+    font:700 13px var(--mono);letter-spacing:.06em;padding:0 20px;cursor:pointer;}
+  .demoform button:hover{box-shadow:0 0 18px rgba(61,240,139,.5);}
+  .demoform button:focus-visible{outline:2px solid var(--ink);outline-offset:-4px;}
+  .statusline{font-family:var(--mono);font-size:12px;color:var(--faint);
+    padding:9px 16px;border-bottom:1px solid var(--line2);display:flex;gap:16px;flex-wrap:wrap;}
+  .statusline .ok{color:var(--green);}
+  .statusline .warn{color:var(--amber);}
+  #demoout{max-height:340px;overflow:auto;}
+  #demoout pre{min-width:0;white-space:pre;font-size:12.5px;line-height:1.7;}
+  .jk{color:var(--green);} .js{color:var(--ink);} .jn{color:var(--amber);} .jp{color:var(--faint);}
+  .demohint{color:var(--faint);font-size:12.5px;font-family:var(--mono);margin:10px 0 0;}
+
   /* value rows */
-  .rows{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line);}
-  .row{display:grid;grid-template-columns:210px 1fr;gap:18px;
+  .rows{border-top:1px solid var(--line);}
+  .row{display:grid;grid-template-columns:220px 1fr;gap:18px;
        padding-block:20px;border-bottom:1px solid var(--line);}
-  .row h3{margin:0;font-size:16px;font-weight:600;line-height:1.4;}
+  .row h3{margin:0;font-size:15px;font-weight:700;line-height:1.45;
+    font-family:var(--mono);color:var(--ink);}
+  .row h3::before{content:"[✓] ";color:var(--green);}
   .row p{margin:0;color:var(--mut);font-size:15px;}
-  .row code{font-family:var(--mono);font-size:13px;color:var(--ink);
-    background:var(--panel);border:1px solid var(--line);border-radius:4px;
+  .row code{font-family:var(--mono);font-size:13px;color:var(--green);
+    background:var(--green-ghost);border:1px solid var(--line);border-radius:4px;
     padding:1px 5px;white-space:nowrap;}
-  @media (max-width:560px){.row{grid-template-columns:1fr;gap:6px;}}
+  @media (max-width:580px){.row{grid-template-columns:1fr;gap:6px;}}
 
   /* steps */
   .steps{display:flex;flex-direction:column;gap:14px;counter-reset:step;}
-  .step{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;}
-  .step::before{counter-increment:step;content:counter(step);
-    font-family:var(--mono);font-size:13px;color:var(--green);
-    border:1px solid var(--line);border-radius:6px;width:30px;height:30px;
-    display:flex;align-items:center;justify-content:center;margin-top:2px;}
+  .step{display:grid;grid-template-columns:36px 1fr;gap:14px;align-items:start;}
+  .step::before{counter-increment:step;content:"0" counter(step);
+    font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green);
+    border:1px solid var(--line);border-radius:6px;width:32px;height:30px;
+    display:flex;align-items:center;justify-content:center;margin-top:2px;
+    background:var(--panel2);}
   .step div{min-width:0;}
-  .step p{margin:0 0 8px;font-size:15px;}
-  .step pre{margin:0;font-family:var(--mono);font-size:13px;color:var(--mut);
+  .step p{margin:0 0 8px;font-size:15px;color:var(--mut);}
+  .step p strong{color:var(--ink);font-weight:600;}
+  .step pre{margin:0;font-family:var(--mono);font-size:13px;color:var(--green);
     background:var(--panel2);border:1px solid var(--line);border-radius:6px;
-    padding:10px 14px;overflow-x:auto;}
+    padding:11px 14px;overflow-x:auto;}
+  .step pre .c{color:var(--faint);}
 
   /* waitlist */
   .wait{background:var(--panel);border:1px solid var(--line);border-radius:10px;
-        padding:28px 26px;}
-  .wait h2{color:var(--amber);margin-bottom:10px;}
-  .wait .pitch{margin:0 0 20px;color:var(--mut);font-size:15px;max-width:58ch;}
+        padding:26px 24px;box-shadow:inset 0 0 60px rgba(61,240,139,.03);}
+  .wait h2{color:var(--amber);}
+  .wait h2::before{content:"// ";color:var(--faint);}
+  .wait .pitch{margin:0 0 20px;color:var(--mut);font-size:15px;max-width:60ch;}
   .wait .pitch strong{color:var(--ink);font-weight:600;}
-  form{display:flex;gap:10px;flex-wrap:wrap;}
-  input[type=email]{flex:1 1 240px;min-width:0;background:var(--bg);
+  form.wl{display:flex;gap:10px;flex-wrap:wrap;}
+  form.wl input{flex:1 1 240px;min-width:0;background:var(--bg);
     border:1px solid var(--line);border-radius:7px;color:var(--ink);
-    font:15px var(--mono);padding:12px 14px;}
-  input[type=email]::placeholder{color:var(--faint);}
-  input[type=email]:focus{outline:2px solid var(--green);outline-offset:1px;border-color:transparent;}
-  button{flex:none;background:var(--green);color:#08120B;border:0;border-radius:7px;
-    font:600 15px var(--sans);padding:12px 22px;cursor:pointer;}
-  button:hover{filter:brightness(1.08);}
-  button:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
-  .msg{margin:14px 0 0;font-family:var(--mono);font-size:13.5px;}
+    font:14px var(--mono);padding:12px 14px;}
+  form.wl input::placeholder{color:var(--faint);}
+  form.wl input:focus{outline:2px solid var(--green);outline-offset:1px;border-color:transparent;}
+  form.wl button{flex:none;background:var(--green);color:#04120A;border:0;border-radius:7px;
+    font:700 14px var(--mono);letter-spacing:.04em;padding:12px 22px;cursor:pointer;}
+  form.wl button:hover{box-shadow:0 0 20px rgba(61,240,139,.45);}
+  form.wl button:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .msg{margin:14px 0 0;font-family:var(--mono);font-size:13px;}
   .msg.ok{color:var(--green);}
   .msg.warn{color:var(--amber);}
 
   footer{border-top:1px solid var(--line);padding-top:22px;
-    color:var(--faint);font-size:13px;max-width:66ch;}
+    color:var(--faint);font-size:12.5px;max-width:68ch;font-family:var(--mono);line-height:1.8;}
   footer p{margin:0 0 8px;}
 
   @media (prefers-reduced-motion:no-preference){
     .deadline .dot{animation:pulse 2.4s ease-in-out infinite;}
-    @keyframes pulse{50%{opacity:.35;box-shadow:0 0 2px var(--amber);}}
+    .cursor{animation:blink 1.1s steps(1) infinite;}
+    @keyframes pulse{50%{opacity:.35;box-shadow:0 0 3px var(--amber);}}
+    @keyframes blink{50%{opacity:0;}}
   }
+  @media (prefers-reduced-motion:reduce){ body::before{display:none;} }
 </style>
 
 <div class="col">
 
   <div class="deadline" role="status">
     <span class="dot" aria-hidden="true"></span>
-    <span>customsearch/v1 returns its last byte in
-      <span class="days" id="days">—</span> days</span>
-    <span class="date">// shutdown 2027-01-01, closed to new customers since Jan 2026</span>
+    <span>customsearch/v1 returns its last byte in <b id="days">—</b> days</span>
+    <span class="date">// shutdown 2027-01-01 · closed to new customers since Jan 2026</span>
   </div>
 
-  <h1>Keep your Custom Search code. Change one URL.</h1>
+  <p class="promptline"><span class="p">ege@prod</span>:~$ cse-compat --legacy-endpoint-preservation</p>
+  <h1>Keep your Custom Search code.<br>Change <span class="hl">one URL</span>.<span class="cursor" aria-hidden="true"></span></h1>
   <p class="lede">Google retires the Custom Search JSON API on January 1, 2027.
-    <strong>cse-compat</strong> is an open-source Cloudflare Worker that serves the
-    same endpoint, parameters, response schema, and error envelope — backed by
+    <strong>cse-compat</strong> is an open-source Cloudflare Worker serving the same
+    endpoint, parameters, response schema, and error envelope — backed by
     <strong>your own key</strong> from a modern search provider. Your application
-    code never finds out Google left.</p>
+    never finds out Google left.</p>
 
-  <div class="diff">
-    <div class="bar"><b>config/search.env</b><span>· the entire migration</span></div>
-    <pre><span class="ln ctx">  SEARCH_CX=017576662512468239146:omuauf_lfve</span><span class="ln del">- SEARCH_BASE=https://www.googleapis.com/customsearch/v1</span><span class="ln add">+ SEARCH_BASE=https://cse.yourdomain.workers.dev/customsearch/v1</span><span class="ln ctx">  # items[].link, items[].snippet, queries.nextPage — unchanged</span></pre>
+  <div class="term">
+    <div class="bar"><span class="d"></span><span class="d"></span><span class="d"></span>
+      <b>config/search.env</b><span class="right">the entire migration</span></div>
+    <div class="scroll"><pre><span class="ln ctx">  SEARCH_CX=017576662512468239146:omuauf_lfve</span><span class="ln del">- SEARCH_BASE=https://www.googleapis.com/customsearch/v1</span><span class="ln add">+ SEARCH_BASE=https://csecompat.com/customsearch/v1</span><span class="ln ctx">  # items[].link, items[].snippet, queries.nextPage — unchanged</span></pre></div>
   </div>
   <p class="diffnote">2 lines changed · 0 parsers rewritten · <em>deploys in an afternoon, not a sprint</em></p>
 
   <section>
-    <h2>What "drop-in" means here</h2>
+    <h2>Run it right now</h2>
+    <div class="term demo">
+      <div class="bar"><span class="d"></span><span class="d"></span><span class="d"></span>
+        <b>GET /customsearch/v1</b><span class="right live" id="livemark">live endpoint</span></div>
+      <form class="demoform" id="demoform" novalidate>
+        <span class="p">q=</span>
+        <label for="demoq" hidden>Search query</label>
+        <input id="demoq" type="text" value="best pizza new york" autocomplete="off" spellcheck="false">
+        <button type="submit">SEND ▸</button>
+      </form>
+      <div class="statusline" id="demostatus" hidden></div>
+      <div id="demoout" class="scroll"></div>
+    </div>
+    <p class="demohint">Real request, real results, Google's exact legacy schema — using the public
+      <span style="color:var(--green)">demo</span> key against this very endpoint.</p>
+  </section>
+
+  <section>
+    <h2>What drop-in means here</h2>
     <div class="rows">
       <div class="row">
-        <h3>The contract, byte for byte</h3>
+        <h3>the contract, byte for byte</h3>
         <p><code>items[]</code> with <code>htmlSnippet</code> highlighting,
         <code>queries.nextPage</code> pagination, honest <code>totalResults</code>,
         <code>num</code>/<code>start</code> limits enforced with Google's exact 400s,
@@ -146,13 +215,13 @@
         library has no case for. Pinned by a public conformance test suite.</p>
       </div>
       <div class="row">
-        <h3>Bring your own key</h3>
+        <h3>bring your own key</h3>
         <p>You plug in your own Brave Search API or serper.dev key and stay their
         direct customer. cse-compat resells nothing and marks up nothing — it is a
         translation layer, Apache-2.0 licensed, and the code is public.</p>
       </div>
       <div class="row">
-        <h3>Built to fail over</h3>
+        <h3>built to fail over</h3>
         <p>Per-provider circuit breaker, timeout budgets, automatic failover, and
         pagination that stays on one index so page 2 never skips or repeats.
         Stateless by design: queries are never logged or stored.</p>
@@ -164,16 +233,16 @@
     <h2>Self-host in three steps</h2>
     <div class="steps">
       <div class="step"><div>
-        <p>Deploy the worker to your Cloudflare account.</p>
-        <pre>git clone github.com/egeoguz04/cse-compat && cd cse-compat
-npm install && npx wrangler deploy</pre>
+        <p><strong>Deploy the worker</strong> to your Cloudflare account.</p>
+        <pre>git clone https://github.com/egeoguz04/cse-compat.git
+cd cse-compat && npm install && npx wrangler deploy</pre>
       </div></div>
       <div class="step"><div>
-        <p>Add your own upstream key — one provider is enough to start.</p>
-        <pre>npx wrangler secret put BRAVE_API_KEY   # or SERPER_API_KEY</pre>
+        <p><strong>Add your own upstream key</strong> — one provider is enough to start.</p>
+        <pre>npx wrangler secret put BRAVE_API_KEY   <span class="c"># or SERPER_API_KEY</span></pre>
       </div></div>
       <div class="step"><div>
-        <p>Point your app's base URL at the worker. That's the migration.</p>
+        <p><strong>Point your app's base URL at the worker.</strong> That's the migration.</p>
         <pre>SEARCH_BASE=https://cse.yourdomain.workers.dev/customsearch/v1</pre>
       </div></div>
     </div>
@@ -185,10 +254,10 @@ npm install && npx wrangler deploy</pre>
       <strong>multi-provider fallback</strong>, <strong>cx site-restriction
       profiles</strong>, usage analytics, and an SLA — same endpoint, zero
       infrastructure on your side. Launching before the shutdown.</p>
-    <form id="wl" novalidate>
+    <form class="wl" id="wl" novalidate>
       <label for="em" hidden>Email</label>
       <input id="em" type="email" placeholder="you@company.dev" autocomplete="email" required>
-      <button type="submit">Join the waitlist</button>
+      <button type="submit">JOIN WAITLIST ▸</button>
     </form>
     <p class="msg" id="msg" hidden></p>
   </section>
@@ -197,7 +266,7 @@ npm install && npx wrangler deploy</pre>
     <p>cse-compat is an independent open-source project, not affiliated with or
       endorsed by Google LLC. "Google" and "Custom Search" are referenced only to
       describe compatibility with the retiring Custom Search JSON API.</p>
-    <p>Apache-2.0 · stateless · no query logging</p>
+    <p>Apache-2.0 · stateless · no query logging · <a href="https://github.com/egeoguz04/cse-compat">source on GitHub</a></p>
   </footer>
 
 </div>
@@ -210,8 +279,80 @@ npm install && npx wrangler deploy</pre>
     document.getElementById('days').textContent = String(d);
   })();
 
-  // Waitlist submit: POSTs to the worker's own /api/waitlist route.
-  // On the design preview (no backend behind this page) it degrades honestly.
+  // ----- Live demo box -----
+  (function () {
+    var form = document.getElementById('demoform');
+    var input = document.getElementById('demoq');
+    var out = document.getElementById('demoout');
+    var status = document.getElementById('demostatus');
+    var livemark = document.getElementById('livemark');
+    var busy = false;
+
+    var SAMPLE = {
+      kind: "customsearch#search",
+      queries: { request: [{ searchTerms: "best pizza new york", count: 3, startIndex: 1 }],
+                 nextPage: [{ startIndex: 4 }] },
+      searchInformation: { searchTime: 0.82, totalResults: "10" },
+      items: [
+        { kind: "customsearch#result", title: "The Best Pizzerias of New York City",
+          htmlTitle: "The <b>Best</b> Pizzerias of <b>New</b> <b>York</b> City",
+          link: "https://ny.eater.com/maps/best-pizza-new-york-city-nyc-pizzerias",
+          displayLink: "ny.eater.com",
+          snippet: "Pugsley Pizza · Mama's Too · Don Antonio · John's of Bleecker Street · Joe's Pizza ..." }
+      ]
+    };
+
+    function esc(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function colorize(json) {
+      var text = esc(JSON.stringify(json, null, 1));
+      return text
+        .replace(/(&quot;|")([^"\n]*?)\1(?=\s*:)/g, '<span class="jk">"$2"</span>')
+        .replace(/: (".*?")(,?)$/gm, ': <span class="js">$1</span>$2')
+        .replace(/: (-?\d[\d.]*)(,?)$/gm, ': <span class="jn">$1</span>$2')
+        .replace(/^(\s*[{}\[\],]+)$/gm, '<span class="jp">$1</span>');
+    }
+    function show(statusHtml, json) {
+      status.innerHTML = statusHtml;
+      status.hidden = false;
+      out.innerHTML = '<pre>' + colorize(json) + '</pre>';
+    }
+
+    function run(q) {
+      if (busy) return;
+      busy = true;
+      status.hidden = false;
+      status.innerHTML = '<span>sending…</span>';
+      out.innerHTML = '';
+      var t0 = Date.now();
+      fetch('/customsearch/v1?key=demo&cx=demo&q=' + encodeURIComponent(q) + '&num=3')
+        .then(function (r) {
+          var ms = Date.now() - t0;
+          var provider = r.headers.get('x-cse-compat-provider') || '—';
+          return r.json().then(function (j) {
+            var cls = r.ok ? 'ok' : 'warn';
+            show('<span class="' + cls + '">HTTP ' + r.status + '</span>' +
+                 '<span>' + ms + ' ms</span>' +
+                 '<span>via ' + esc(provider) + '</span>' +
+                 '<span>content-type: application/json</span>', j);
+          });
+        })
+        .catch(function () {
+          livemark.textContent = 'design preview';
+          show('<span class="warn">preview mode</span><span>sample response — the live box runs at csecompat.com</span>', SAMPLE);
+        })
+        .finally(function () { busy = false; });
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var q = input.value.trim();
+      if (q) run(q);
+    });
+  })();
+
+  // ----- Waitlist -----
   (function () {
     var form = document.getElementById('wl');
     var msg = document.getElementById('msg');
@@ -221,7 +362,7 @@ npm install && npx wrangler deploy</pre>
       e.preventDefault();
       var email = input.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        show('That does not look like an email address.', 'warn');
+        show('that does not look like an email address', 'warn');
         return;
       }
       fetch('/api/waitlist', {
@@ -229,11 +370,11 @@ npm install && npx wrangler deploy</pre>
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email })
       }).then(function (r) {
-        if (r.ok) { show('You are on the list. We will email you before the shutdown.', 'ok'); form.reset(); }
-        else if (r.status === 503) { show('Signups are not configured on this deployment yet.', 'warn'); }
-        else { show('Something went wrong — try again in a minute.', 'warn'); }
+        if (r.ok) { show('✓ you are on the list — we will email you before the shutdown', 'ok'); form.reset(); }
+        else if (r.status === 503) { show('signups are not configured on this deployment yet', 'warn'); }
+        else { show('something went wrong — try again in a minute', 'warn'); }
       }).catch(function () {
-        show('Design preview — signups go live on the deployed site.', 'warn');
+        show('design preview — signups go live on the deployed site', 'warn');
       });
     });
   })();
