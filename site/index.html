@@ -13,7 +13,7 @@
     --bg:#121212; --surface:#171717; --raised:#1C1C1C; --well:#0E0E0E;
     --line:#262626; --line-hi:#363636; --line-strong:#4A4A4A;
     --ink:#EDEDED; --body:#A1A1A1; --faint:#6B6B6B;
-    --green:#3ECF8E; --green-hover:#5BD9A1; --green-ink:#06140D;
+    --green:#3ECF8E; --green-hover:#34B87C; --green-ink:#06140D;
     --green-wash:rgba(62,207,142,.10); --green-edge:rgba(62,207,142,.28);
     --amber:#F5B544; --red:#F87171; --red-wash:rgba(248,113,113,.10);
     --diff-del:#2A1616; --diff-add:#0F2A1E;
@@ -39,6 +39,7 @@
   header nav{margin-left:auto;display:flex;align-items:center;gap:22px;font-size:13.5px;}
   header nav a{color:var(--body);font-weight:500;}
   header nav a:hover{color:var(--ink);text-decoration:none;}
+  header nav a.btn-primary,header nav a.btn-primary:hover{color:var(--green-ink);}
   .btn{display:inline-flex;align-items:center;gap:8px;border-radius:7px;
     font:600 13.5px var(--sans);padding:8px 15px;cursor:pointer;border:1px solid transparent;
     transition:background .15s ease,border-color .15s ease,color .15s ease;}
@@ -49,14 +50,7 @@
   .btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
 
   /* ---------- hero ---------- */
-  .hero{position:relative;text-align:center;padding-top:88px;margin-bottom:34px;}
-  .hero::before{content:"";position:absolute;inset:0 -20px -40px;z-index:0;pointer-events:none;
-    background-image:
-      linear-gradient(to right,rgba(255,255,255,.045) 1px,transparent 1px),
-      linear-gradient(to bottom,rgba(255,255,255,.045) 1px,transparent 1px);
-    background-size:44px 44px;background-position:center top;
-    -webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 20%,#000 20%,transparent 75%);
-            mask-image:radial-gradient(ellipse 60% 70% at 50% 20%,#000 20%,transparent 75%);}
+  .hero{position:relative;text-align:center;padding-top:44px;margin-bottom:34px;}
   .hero>*{position:relative;z-index:1;}
   .pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);
     font-size:12px;color:var(--body);background:var(--surface);
@@ -68,7 +62,7 @@
   h1 .l2{display:block;color:var(--green);}
   .lede{font-size:17px;max-width:56ch;margin:0 auto 30px;}
   .lede strong{color:var(--ink);font-weight:500;}
-  .ctas{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:64px;}
+  .ctas{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:48px;}
   .ctas .btn{padding:11px 20px;font-size:14px;}
 
   /* ---------- terminal windows ---------- */
