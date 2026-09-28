@@ -33,7 +33,7 @@ the repo that compares a deployment's output against golden fixtures captured
 from the real API — if you still have a working key, capture yours now; after
 Jan 1 they can't be regenerated.
 
-Repo: https://github.com/egeoguz04/cse-compat — demo: `curl "https://csecompat.com/customsearch/v1?key=demo&cx=test&q=hello"`
+Repo: https://github.com/csecompat/cse-compat — demo: `curl "https://csecompat.com/customsearch/v1?key=demo&cx=test&q=hello"`
 
 ---
 
@@ -61,7 +61,7 @@ underneath.
 What it doesn't do (yet): image search, pagemap. And ranking is the provider's,
 not Google's — same shape, different results.
 
-Repo: https://github.com/egeoguz04/cse-compat. If you have a working CSE key, the repo has a fixture-capture
+Repo: https://github.com/csecompat/cse-compat. If you have a working CSE key, the repo has a fixture-capture
 script — golden responses from the real API become irreplaceable after the
 shutdown, and PRs adding cases are very welcome.
 
@@ -88,7 +88,7 @@ shutdown, and PRs adding cases are very welcome.
 > Apache-2.0 worker that serves the same endpoint/schema backed by a
 > Brave/Serper key, so [project] users could migrate with a base-URL config
 > change instead of a parser rewrite. Happy to open a PR adding it as a
-> documented option, or answer questions. Repo: https://github.com/egeoguz04/cse-compat
+> documented option, or answer questions. Repo: https://github.com/csecompat/cse-compat
 
 Rules for outreach: only projects with real CSE usage in code (search GitHub
 for `customsearch/v1` and `googleapis.com/customsearch`); one message, no

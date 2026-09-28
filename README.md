@@ -20,7 +20,7 @@ Everything downstream — `items[].link`, `items[].snippet`, `queries.nextPage`,
 ## Quick start
 
 ```bash
-git clone https://github.com/egeoguz04/cse-compat.git && cd cse-compat
+git clone https://github.com/csecompat/cse-compat.git && cd cse-compat
 npm install
 npx wrangler secret put BRAVE_API_KEY     # your own Brave Search API token, and/or:
 npx wrangler secret put SERPER_API_KEY    # your own serper.dev key
