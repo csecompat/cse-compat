@@ -2,7 +2,7 @@
 
 **A drop-in compatible endpoint for the retiring Google Custom Search JSON API — bring your own search API key, keep your code unchanged.**
 
-Google shuts down the Custom Search JSON API on **January 1, 2027**. Every app calling `https://www.googleapis.com/customsearch/v1` breaks that day. `cse-compat` is a tiny Cloudflare Worker that serves the **same endpoint, same parameters, same response schema, same error envelope** — backed by *your own* API key from a modern search provider (Brave Search API, serper.dev, more coming).
+Google shuts down the Custom Search JSON API on **January 1, 2027**. Every app calling `https://www.googleapis.com/customsearch/v1` breaks that day. `cse-compat` is a tiny Cloudflare Worker that serves the **same endpoint, same parameters, same response schema, same error envelope** — backed by *your own* API key from a modern search provider (Brave Search API, serper.dev, SpecStream, more coming).
 
 Migration is the base URL and the key:
 
@@ -23,7 +23,8 @@ Everything downstream — `items[].link`, `items[].snippet`, `queries.nextPage`,
 git clone https://github.com/csecompat/cse-compat.git && cd cse-compat
 npm install
 npx wrangler secret put BRAVE_API_KEY     # your own Brave Search API token, and/or:
-npx wrangler secret put SERPER_API_KEY    # your own serper.dev key
+npx wrangler secret put SERPER_API_KEY    # your own serper.dev key, and/or:
+npx wrangler secret put SPECSTREAM_API_KEY  # your own SpecStream API key
 npx wrangler secret put PROXY_KEYS        # comma-separated keys your clients will send as ?key=
 npx wrangler deploy
 ```
@@ -36,8 +37,9 @@ Then point your existing code's base URL at the worker. Done.
 |---|---|---|
 | `BRAVE_API_KEY` | one of these | Your Brave Search API subscription token |
 | `SERPER_API_KEY` | one of these | Your serper.dev API key |
+| `SPECSTREAM_API_KEY` | one of these | Your SpecStream API key |
 | `PROXY_KEYS` | recommended | Accepted `?key=` values. Unset ⇒ open (private deployments only) |
-| `PROVIDER_ORDER` | no | Default `brave,serper`, filtered to configured providers |
+| `PROVIDER_ORDER` | no | Default `brave,serper,specstream`, filtered to configured providers |
 | `FAILOVER_ON_QUOTA` | no | `true` ⇒ on a 429 from one of *your* upstream keys, try the next provider. Default `false` (your quota problems are surfaced, not hidden) |
 | `TIMEOUT_MS` | no | Per-provider timeout budget (default 4000) |
 

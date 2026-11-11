@@ -14,7 +14,8 @@
  *                      anything reachable from the internet.
  *   BRAVE_API_KEY      your own Brave Search API subscription token.
  *   SERPER_API_KEY     your own serper.dev API key.
- *   PROVIDER_ORDER     optional, default "brave,serper" filtered to the
+ *   SPECSTREAM_API_KEY your own SpecStream API key.
+ *   PROVIDER_ORDER     optional, default "brave,serper,specstream" filtered to the
  *                      providers that have keys configured.
  *   FAILOVER_ON_QUOTA  "true" to fail over to the next provider when one
  *                      returns 429 on YOUR key. Default false: your quota
@@ -39,11 +40,13 @@ import { ProviderError } from './types';
 import { braveAdapter } from './adapters/brave';
 import { handleStats, type StatsKV } from './stats';
 import { serperAdapter } from './adapters/serper';
+import { specstreamAdapter } from './adapters/specstream';
 
 export interface Env {
   PROXY_KEYS?: string;
   BRAVE_API_KEY?: string;
   SERPER_API_KEY?: string;
+  SPECSTREAM_API_KEY?: string;
   PROVIDER_ORDER?: string;
   FAILOVER_ON_QUOTA?: string;
   TIMEOUT_MS?: string;
@@ -96,15 +99,16 @@ export const DEMO_CREDITS_MESSAGE =
   'The public demo has used up its search credits for now. Self-host with your own ' +
   '(free-tier) key to keep testing: https://github.com/csecompat/cse-compat';
 
-const ADAPTERS = { brave: braveAdapter, serper: serperAdapter } as const;
+const ADAPTERS = { brave: braveAdapter, serper: serperAdapter, specstream: specstreamAdapter } as const;
 type ProviderName = keyof typeof ADAPTERS;
 
 export function buildProviders(env: Env): RoutedProvider[] {
   const keys: Record<ProviderName, string | undefined> = {
     brave: env.BRAVE_API_KEY,
     serper: env.SERPER_API_KEY,
+    specstream: env.SPECSTREAM_API_KEY,
   };
-  const order = (env.PROVIDER_ORDER ?? 'brave,serper')
+  const order = (env.PROVIDER_ORDER ?? 'brave,serper,specstream')
     .split(',')
     .map((s) => s.trim().toLowerCase())
     .filter((s): s is ProviderName => s in ADAPTERS);
@@ -200,7 +204,7 @@ export default {
 
     const providers = buildProviders(env);
     if (providers.length === 0) {
-      return backendError('No upstream provider configured. Set BRAVE_API_KEY and/or SERPER_API_KEY.');
+      return backendError('No upstream provider configured. Set BRAVE_API_KEY, SERPER_API_KEY and/or SPECSTREAM_API_KEY.');
     }
 
     try {
