@@ -1,0 +1,107 @@
+{
+  "data": {
+    "id": "ws_01fixture",
+    "request_id": "ws_01fixture",
+    "query": "best pizza new york",
+    "kind": "list",
+    "columns": [],
+    "answer": null,
+    "rows": [],
+    "sources": [
+      {
+        "url": "https://joespizza.com/",
+        "title": "Joe's Pizza - New York",
+        "site": "joespizza.com",
+        "snippet": "The best classic slice in NYC since 1975.",
+        "cited": false,
+        "published": null,
+        "read_at": "2026-11-10T12:00:00Z"
+      },
+      {
+        "url": "https://example.com/nyc-pizza",
+        "title": "The 12 Best Pizza Places in NYC",
+        "site": "example.com",
+        "snippet": "Our ranked list of the best pizza in New York.",
+        "cited": false,
+        "published": null,
+        "read_at": "2026-11-10T12:00:00Z"
+      },
+      {
+        "url": "https://lucali.example/",
+        "title": "Lucali - Brooklyn",
+        "site": "lucali.example",
+        "snippet": "Legendary Brooklyn pizza with long lines and thin crust.",
+        "cited": false,
+        "published": null,
+        "read_at": "2026-11-10T12:00:00Z"
+      },
+      {
+        "url": "https://princestreet.example/",
+        "title": "Prince Street Pizza",
+        "site": "princestreet.example",
+        "snippet": "Famous square slices in Nolita.",
+        "cited": false,
+        "published": null,
+        "read_at": "2026-11-10T12:00:00Z"
+      },
+      {
+        "url": "https://bestpizza.example/",
+        "title": "Best Pizza (Williamsburg)",
+        "site": "bestpizza.example",
+        "snippet": "Literally named Best Pizza.",
+        "cited": false,
+        "published": null,
+        "read_at": "2026-11-10T12:00:00Z"
+      },
+      {
+        "url": "https://difara.example/",
+        "title": "Di Fara Pizza",
+        "site": "difara.example",
+        "snippet": "A Midwood institution.",
+        "cited": false,
+        "published": null,
+        "read_at": "2026-11-10T12:00:00Z"
+      },
+      {
+        "url": "https://scarrs.example/",
+        "title": "Scarr's Pizza",
+        "site": "scarrs.example",
+        "snippet": "Naturally-leavened dough on the Lower East Side.",
+        "cited": false,
+        "published": null,
+        "read_at": "2026-11-10T12:00:00Z"
+      },
+      {
+        "url": "https://johns.example/",
+        "title": "John's of Bleecker Street",
+        "site": "johns.example",
+        "snippet": "Coal-fired whole pies only.",
+        "cited": false,
+        "published": null,
+        "read_at": "2026-11-10T12:00:00Z"
+      },
+      {
+        "url": "https://lindustrie.example/",
+        "title": "L'industrie Pizzeria",
+        "site": "lindustrie.example",
+        "snippet": "Burrata slice fame.",
+        "cited": false,
+        "published": null,
+        "read_at": "2026-11-10T12:00:00Z"
+      },
+      {
+        "url": "https://totonnos.example/",
+        "title": "Totonno's",
+        "site": "totonnos.example",
+        "snippet": "Coney Island classic since 1924.",
+        "cited": false,
+        "published": null,
+        "read_at": "2026-11-10T12:00:00Z"
+      }
+    ],
+    "page": 1,
+    "next_page": 2,
+    "took_ms": 812,
+    "price_usd": 0.005
+  }
+}

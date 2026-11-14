@@ -13,10 +13,11 @@ routes = [
 # Secrets (set with `wrangler secret put <NAME>`):
 #   BRAVE_API_KEY      your own Brave Search API subscription token (BYOK)
 #   SERPER_API_KEY     your own serper.dev key (BYOK)
+#   SPECSTREAM_API_KEY your own SpecStream API key (BYOK)
 #   PROXY_KEYS         comma-separated keys your clients will send as ?key=
 
 [vars]
-# PROVIDER_ORDER = "brave,serper"
+# PROVIDER_ORDER = "brave,serper,specstream"
 # FAILOVER_ON_QUOTA = "false"
 # TIMEOUT_MS = "4000"
 
